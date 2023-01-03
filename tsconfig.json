@@ -1,0 +1,12 @@
+{
+	"compilerOptions": {
+	  "module": "ESNext",
+	  "target": "es2015",
+	  "noImplicitAny": true,
+	  "declaration": true,
+	  "declarationDir": "temp/",
+	},
+	"include": [
+	  "src/**/*"
+	]
+  }

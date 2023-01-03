@@ -1,0 +1,25 @@
+{
+  "name": "nitro-fs",
+  "version": "1.0.0",
+  "description": "",
+  "type": "module",
+  "main": "dist/nitro-fs.js",
+  "module": "dist/nitro-fs.js",
+  "types": "dist/nitro-fs.d.ts",
+  "scripts": {
+    "build": "rollup -c && api-extractor run --local && rm -r temp/",
+    "dev": "rollup -c --watch --watch.onEnd \"npx api-extractor run --local && rm -r temp/\""
+  },
+  "files": [
+    "dist"
+  ],
+  "author": "DanielPXL",
+  "license": "MIT",
+  "devDependencies": {
+    "@microsoft/api-extractor": "^7.29.5",
+    "@rollup/plugin-node-resolve": "^13.3.0",
+    "rollup": "^2.78.1",
+    "rollup-plugin-typescript2": "^0.33.0",
+    "typescript": "^4.8.2"
+  }
+}
