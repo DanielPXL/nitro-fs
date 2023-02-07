@@ -1,10 +1,12 @@
+import { BufferReader } from "./BufferReader";
+
 export class NitroFAT {
-	constructor(raw: Uint8Array) {
+	constructor(raw: BufferReader) {
 		this.entries = [];
 
 		for (let i = 0; i < raw.length; i += 8) {
-			const startAddress = raw[i] | (raw[i + 1] << 8) | (raw[i + 2] << 16) | (raw[i + 3] << 24);
-			const endAddress = raw[i + 4] | (raw[i + 5] << 8) | (raw[i + 6] << 16) | (raw[i + 7] << 24);
+			const startAddress = raw.readUint32(i);
+			const endAddress = raw.readUint32(i + 4);
 
 			this.entries.push({
 				startAddress,

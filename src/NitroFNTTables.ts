@@ -1,5 +1,7 @@
+import { BufferReader } from "./BufferReader";
+
 export class NitroFNTMainTable {
-	constructor(raw: Uint8Array, numEntries: number) {
+	constructor(raw: BufferReader, numEntries: number) {
 		this.totalDirCount = numEntries;
 		this.entries = [];
 
@@ -7,9 +9,9 @@ export class NitroFNTMainTable {
 			const entryOffset = i * 8;
 			const entryBuffer = raw.slice(entryOffset, entryOffset + 8);
 			const entry = {
-				subTableOffset: entryBuffer[0] | (entryBuffer[1] << 8) | (entryBuffer[2] << 16) | (entryBuffer[3] << 24),
-				firstFileID: entryBuffer[4] | (entryBuffer[5] << 8),
-				parentDirectoryID: (entryBuffer[6] | (entryBuffer[7] << 8))
+				subTableOffset: entryBuffer.readUint32(0x00),
+				firstFileID: entryBuffer.readUint16(0x04),
+				parentDirectoryID: entryBuffer.readUint16(0x06)
 			};
 			this.entries.push(entry);
 		}
@@ -26,18 +28,18 @@ export type NitroFNTMainTableEntry = {
 }
 
 export class NitroFNTSubTable {
-	constructor(raw: Uint8Array) {
+	constructor(raw: BufferReader) {
 		this.entries = [];
 
 		let i = 0;
 		while (true) {
-			const typeAndLength = raw[i];
+			const typeAndLength = raw.readUint8(i);
 			i++;
 
 			const { type, length } = this.seperateTypeAndLength(typeAndLength);
 
 			if (type == NitroFNTSubtableEntryType.File) {
-				const name = String.fromCharCode(...raw.slice(i, i + length));
+				const name = raw.readChars(i, length);
 				i += length;
 
 				this.entries.push({
@@ -46,11 +48,11 @@ export class NitroFNTSubTable {
 					name
 				});
 			} else if (type == NitroFNTSubtableEntryType.SubDirectory) {
-				const name = String.fromCharCode(...raw.slice(i, i + length));
+				const name = raw.readChars(i, length);
 				i += length;
 
 				// ID of the subdirectory (2 bytes, little endian)
-				const id = (raw[i] | (raw[i + 1] << 8)) & 0xFFF;
+				const id = raw.readUint16(i) & 0xFFF;
 				i += 2;
 
 				this.entries.push({

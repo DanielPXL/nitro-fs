@@ -2,24 +2,25 @@ export class BufferReader {
 	constructor(buffer: ArrayBuffer, start: number, length: number, littleEndian: boolean = true) {
 		this.buffer = buffer;
 		this.start = start;
-		this.length = length;
+		this.bufferLength = length;
 		this.view = new DataView(buffer, start, length);
+		this.littleEndian = littleEndian;
 	}
 
 	private buffer: ArrayBuffer;
 	private start: number;
-	private length: number;
+	private bufferLength: number;
 	private view: DataView;
 
 	public littleEndian: boolean;
 
-	new(buffer: ArrayBuffer, littleEndian: boolean = true) {
+	static new(buffer: ArrayBuffer, littleEndian: boolean = true) {
 		return new BufferReader(buffer, 0, buffer.byteLength, littleEndian);
 	}
 
 	slice(start: number, end?: number) {
 		if (end === undefined) {
-			end = this.length;
+			end = this.bufferLength;
 		}
 
 		return new BufferReader(this.buffer, this.start + start, end - start);		
@@ -59,8 +60,8 @@ export class BufferReader {
 
 	/**
 	 * Reads a string of the specified length from the buffer.
-	 * @param offset The offset to start reading from.
-	 * @param length The length of the string to read.
+	 * @param offset - The offset to start reading from.
+	 * @param length - The length of the string to read.
 	 */
 	readChars(offset: number, length: number) {
 		let result = "";
@@ -72,7 +73,7 @@ export class BufferReader {
 
 	/**
 	 * Reads a null-terminated string from the buffer.
-	 * @param offset The offset to start reading from.
+	 * @param offset - The offset to start reading from.
 	 */
 	readString(offset: number) {
 		let result = "";
@@ -88,5 +89,13 @@ export class BufferReader {
 		}
 
 		return result;
+	}
+
+	get length() {
+		return this.bufferLength;
+	}
+
+	getBuffer() {
+		return this.buffer.slice(this.start, this.start + this.bufferLength);
 	}
 }

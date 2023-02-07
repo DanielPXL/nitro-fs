@@ -1,11 +1,12 @@
+import { BufferReader } from "./BufferReader";
 import { NitroFNTMainTable, NitroFNTSubTable, NitroFNTSubtableEntryType } from "./NitroFNTTables";
 
 export class NitroFNT {
-	constructor(raw: Uint8Array) {
+	constructor(raw: BufferReader) {
 		// First, read the main table
 		// The number of entries is always stored at 0x06 and 0x07 (2 bytes, little endian)
 		// Each entry is 8 bytes long, so the total size of the main table is 8 * numEntries
-		const numEntries = raw[0x06] | (raw[0x07] << 8);
+		const numEntries = raw.readUint16(0x06);
 		const mainTableBuffer = raw.slice(0, 8 * numEntries);
 		this.mainTable = new NitroFNTMainTable(mainTableBuffer, numEntries);
 

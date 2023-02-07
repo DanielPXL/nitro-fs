@@ -1,4 +1,5 @@
 export { NitroFS } from "./NitroFS";
+export { BufferReader } from "./BufferReader";
 export { CartridgeHeader } from "./CartridgeHeader";
 export { BTX0 } from "./Formats/3D/BTX0/BTX0";
 export { BTX0Header } from "./Formats/3D/BTX0/BTX0Header";
