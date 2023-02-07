@@ -82,15 +82,22 @@ export class TEX0 {
 
 			case 5: {
 				// Compressed 4x4 Texel
+				// Please don't ask me how this works because I don't know either
+				// I just changed some values until it somehow worked
 				const texOffset = this.header.textureDataOffset + textureInfo.textureOffset;
 				const texSize = textureInfo.width * textureInfo.height / 2;
 				const texRaw = this.raw.slice(texOffset, texOffset + texSize);
-
+				
 				const paletteInfo = this.paletteInfo.entries[palIndex];
 				const paletteOffset = this.header.paletteDataOffset + paletteInfo.paletteOffset;
 				const palRaw = this.raw.slice(paletteOffset);
 
-				return TextureFormats.parseCompressed4x4(texRaw, palRaw, textureInfo.width, textureInfo.height);
+				// Compressed 4x4 Texels have a second buffer after the texture data that contains the palette indices
+				const palIdxOffset = this.header.compressedTextureInfoDataOffset + textureInfo.textureOffset / 2;
+				const palIdxSize = (textureInfo.width * textureInfo.height) / 2;
+				const palIdxData = this.raw.slice(palIdxOffset, palIdxOffset + palIdxSize);
+
+				return TextureFormats.parseCompressed4x4(texRaw, palRaw, palIdxData, textureInfo.width, textureInfo.height);
 			}
 
 			case 6: {

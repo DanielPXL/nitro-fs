@@ -160,8 +160,7 @@ export class TextureFormats {
 	}
 
 	// Format 5
-	static parseCompressed4x4(texRaw: Uint8Array, palRaw: Uint8Array, width: number, height: number): Uint8Array {
-		const palIdxData = texRaw.slice((width * height) / 4);
+	static parseCompressed4x4(texRaw: Uint8Array, palRaw: Uint8Array, palIdxData: Uint8Array, width: number, height: number): Uint8Array {
 		return readTexture_CMPR_4x4(width, height, texRaw, palIdxData, palRaw);
 	}
 
