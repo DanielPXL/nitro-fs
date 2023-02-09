@@ -1,7 +1,9 @@
+import { BufferReader } from "../../BufferReader";
+
 // https://github.com/magical/nlzss/blob/master/lzss3.py
 
 export class LZ10 {
-	static decompress(indata: Uint8Array, decompressedSize: number) {
+	static decompress(indata: BufferReader, decompressedSize: number) {
 		let data = new Uint8Array(decompressedSize);
 		let dataIndex = 0;
 
@@ -27,13 +29,13 @@ export class LZ10 {
 		}
 
 		function readByte() {
-			return indata[rawIndex++];
+			return indata.readUint8(rawIndex++);
 		}
 
 		function readShort() {
 			// big-endian
-			const a = indata[rawIndex++];
-			const b = indata[rawIndex++];
+			const a = indata.readUint8(rawIndex++);
+			const b = indata.readUint8(rawIndex++);
 			return (a << 8) | b;
 		}
 

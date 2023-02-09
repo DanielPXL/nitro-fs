@@ -1,9 +1,11 @@
+import { BufferReader } from "../../BufferReader";
+
 export class CompressionHeader {
-	constructor(raw: Uint8Array) {
+	constructor(raw: BufferReader) {
 		// Byte 0: Compression Type
-		this.compressionType = raw[0];
+		this.compressionType = raw.readUint8(0x00);
 		// Byte 1-3: Decompressed size
-		this.decompressedSize = raw[1] << 16 | raw[2] << 8 | raw[3];
+		this.decompressedSize = raw.readUint24(0x01);
 	}
 
 	compressionType: CompressionType;

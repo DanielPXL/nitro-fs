@@ -34,6 +34,10 @@ export class BufferReader {
 		return this.view.getUint16(offset, this.littleEndian);
 	}
 
+	readUint24(offset: number) {
+		return this.view.getUint8(offset) | (this.view.getUint8(offset + 1) << 8) | (this.view.getUint8(offset + 2) << 16);
+	}
+
 	readUint32(offset: number) {
 		return this.view.getUint32(offset, this.littleEndian);
 	}
@@ -44,6 +48,10 @@ export class BufferReader {
 
 	readInt16(offset: number) {
 		return this.view.getInt16(offset, this.littleEndian);
+	}
+
+	readInt24(offset: number) {
+		return this.view.getInt8(offset) | (this.view.getInt8(offset + 1) << 8) | (this.view.getInt8(offset + 2) << 16);
 	}
 
 	readInt32(offset: number) {

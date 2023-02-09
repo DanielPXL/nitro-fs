@@ -1,8 +1,9 @@
+import { BufferReader } from "../../BufferReader";
 import { CompressionHeader, CompressionType } from "./CompressionHeader";
 import { LZ10 } from "./LZ10";
 
 export class Compression {
-	static decompress(raw: Uint8Array) {
+	static decompress(raw: BufferReader) {
 		const header = new CompressionHeader(raw.slice(0, 4));
 		switch (header.compressionType) {
 			case CompressionType.LZ10:
