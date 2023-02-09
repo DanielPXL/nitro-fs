@@ -15,7 +15,7 @@ const config = {
 		}
 	],
 	plugins: [
-		typescript({ useTsconfigDeclarationDir: true }),
+		typescript({ useTsconfigDeclarationDir: true, sourceMap: false }),
 		nodeResolve()
 	],
 	cache: true

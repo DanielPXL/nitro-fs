@@ -1,10 +1,11 @@
 // http://problemkaputt.de/gbatek.htm#ds3dtextureformats
 
+import { BufferReader } from "../../../BufferReader";
 import { readTexture_CMPR_4x4 } from "./Compressed4x4";
 
 export class TextureFormats {
 	// Format 1
-	static parseA3I5(texRaw: Uint8Array, palRaw: Uint8Array, width: number, height: number, firstColorTransparent: boolean): Uint8Array {
+	static parseA3I5(texRaw: BufferReader, palRaw: BufferReader, width: number, height: number, firstColorTransparent: boolean): Uint8Array {
 		// Texture Format: 8 bits per texel
 		// IIIIIAAA
 		// I: Palette Index
@@ -14,11 +15,11 @@ export class TextureFormats {
 		const tex = new Uint8Array(width * height * 4);
 
 		for (let i = 0; i < texRaw.length; i++) {
-			const texel = texRaw[i];
+			const texel = texRaw.readUint8(i);
 			const index = texel & 0b00011111;
 			const alpha = (texel & 0b11100000) >> 5;
 
-			const color = palRaw[index * 2] | (palRaw[index * 2 + 1] << 8);
+			const color = palRaw.readUint16(index * 2);
 
 			tex[i * 4 + 0] = this.color5to8((color >> 0) & 0x1F);
 			tex[i * 4 + 1] = this.color5to8((color >> 5) & 0x1F);
@@ -36,7 +37,7 @@ export class TextureFormats {
 	}
 
 	// Format 2
-	static parsePalette4(texRaw: Uint8Array, palRaw: Uint8Array, width: number, height: number, firstColorTransparent: boolean): Uint8Array {
+	static parsePalette4(texRaw: BufferReader, palRaw: BufferReader, width: number, height: number, firstColorTransparent: boolean): Uint8Array {
 		// Texture Format: 2 bits per texel
 		// Palette Format: RGBA5551, 2 bytes per texel
 		// Alpha values don't seem to be used
@@ -44,15 +45,17 @@ export class TextureFormats {
 		const tex = new Uint8Array(width * height * 4);
 
 		for (let i = 0; i < texRaw.length; i++) {
-			const texel1 = texRaw[i] & 0b00000011;
-			const texel2 = (texRaw[i] & 0b00001100) >> 2;
-			const texel3 = (texRaw[i] & 0b00110000) >> 4;
-			const texel4 = (texRaw[i] & 0b11000000) >> 6;
+			const texels = texRaw.readUint8(i);
 
-			const color1 = palRaw[texel1 * 2] | (palRaw[texel1 * 2 + 1] << 8);
-			const color2 = palRaw[texel2 * 2] | (palRaw[texel2 * 2 + 1] << 8);
-			const color3 = palRaw[texel3 * 2] | (palRaw[texel3 * 2 + 1] << 8);
-			const color4 = palRaw[texel4 * 2] | (palRaw[texel4 * 2 + 1] << 8);
+			const texel1 = texels & 0b00000011;
+			const texel2 = (texels & 0b00001100) >> 2;
+			const texel3 = (texels & 0b00110000) >> 4;
+			const texel4 = (texels & 0b11000000) >> 6;
+
+			const color1 = palRaw.readUint16(texel1 * 2);
+			const color2 = palRaw.readUint16(texel2 * 2);
+			const color3 = palRaw.readUint16(texel3 * 2);
+			const color4 = palRaw.readUint16(texel4 * 2);
 
 			tex[i * 16 + 0] = this.color5to8((color1 >> 0) & 0x1F);
 			tex[i * 16 + 1] = this.color5to8((color1 >> 5) & 0x1F);
@@ -97,7 +100,7 @@ export class TextureFormats {
 	}
 
 	// Format 3
-	static parsePalette16(texRaw: Uint8Array, palRaw: Uint8Array, width: number, height: number, firstColorTransparent: boolean): Uint8Array {
+	static parsePalette16(texRaw: BufferReader, palRaw: BufferReader, width: number, height: number, firstColorTransparent: boolean): Uint8Array {
 		// Texture Format: 4 bits per texel
 		// Palette Format: RGBA5551, 2 bytes per texel
 		// Alpha values don't seem to be used
@@ -105,11 +108,13 @@ export class TextureFormats {
 		const tex = new Uint8Array(width * height * 4);
 		
 		for (let i = 0; i < texRaw.length; i++) {
-			const texel1 = texRaw[i] & 0x0F;
-			const texel2 = (texRaw[i] & 0xF0) >> 4;
+			const texels = texRaw.readUint8(i);
 
-			const color1 = palRaw[texel1 * 2] | (palRaw[texel1 * 2 + 1] << 8);
-			const color2 = palRaw[texel2 * 2] | (palRaw[texel2 * 2 + 1] << 8);
+			const texel1 = texels & 0x0F;
+			const texel2 = (texels & 0xF0) >> 4;
+
+			const color1 = palRaw.readUint16(texel1 * 2);
+			const color2 = palRaw.readUint16(texel2 * 2);
 
 			tex[i * 8 + 0] = this.color5to8((color1 >> 0) & 0x1F);
 			tex[i * 8 + 1] = this.color5to8((color1 >> 5) & 0x1F);
@@ -134,7 +139,7 @@ export class TextureFormats {
 	}
 
 	// Format 4
-	static parsePalette256(texRaw: Uint8Array, palRaw: Uint8Array, width: number, height: number, firstColorTransparent: boolean): Uint8Array {
+	static parsePalette256(texRaw: BufferReader, palRaw: BufferReader, width: number, height: number, firstColorTransparent: boolean): Uint8Array {
 		// Texture Format: 8 bits per texel
 		// Palette Format: RGBA5551, 2 bytes per texel
 		// Alpha values don't seem to be used
@@ -142,9 +147,9 @@ export class TextureFormats {
 		const tex = new Uint8Array(width * height * 4);
 
 		for (let i = 0; i < texRaw.length; i++) {
-			const texel = texRaw[i];
+			const texel = texRaw.readUint8(i);
 
-			const color = palRaw[texel * 2] | (palRaw[texel * 2 + 1] << 8);
+			const color = palRaw.readUint16(texel * 2);
 
 			tex[i * 4 + 0] = this.color5to8((color >> 0) & 0x1F);
 			tex[i * 4 + 1] = this.color5to8((color >> 5) & 0x1F);
@@ -160,12 +165,12 @@ export class TextureFormats {
 	}
 
 	// Format 5
-	static parseCompressed4x4(texRaw: Uint8Array, palRaw: Uint8Array, palIdxData: Uint8Array, width: number, height: number): Uint8Array {
+	static parseCompressed4x4(texRaw: BufferReader, palRaw: BufferReader, palIdxData: BufferReader, width: number, height: number): Uint8Array {
 		return readTexture_CMPR_4x4(width, height, texRaw, palIdxData, palRaw);
 	}
 
 	// Format 6
-	static parseA5I3(texRaw: Uint8Array, palRaw: Uint8Array, width: number, height: number, firstColorTransparent: boolean): Uint8Array {
+	static parseA5I3(texRaw: BufferReader, palRaw: BufferReader, width: number, height: number, firstColorTransparent: boolean): Uint8Array {
 		// Texture Format: 8 bits per texel
 		// IIIAAAAA
 		// I: Palette Index
@@ -175,11 +180,11 @@ export class TextureFormats {
 		const tex = new Uint8Array(width * height * 4);
 
 		for (let i = 0; i < texRaw.length; i++) {
-			const texel = texRaw[i];
+			const texel = texRaw.readUint8(i);
 			const index = texel & 0b00000111;
 			const alpha = (texel & 0b11111000) >> 3;
 
-			const color = palRaw[index * 2] | (palRaw[index * 2 + 1] << 8);
+			const color = palRaw.readInt16(index * 2);
 
 			tex[i * 4 + 0] = this.color5to8((color >> 0) & 0x1F);
 			tex[i * 4 + 1] = this.color5to8((color >> 5) & 0x1F);
@@ -193,13 +198,13 @@ export class TextureFormats {
 	}
 
 	// Format 7
-	static parseDirectColor(texRaw: Uint8Array, width: number, height: number) {
+	static parseDirectColor(texRaw: BufferReader, width: number, height: number) {
 		// Texture Format: RGBA5551, 2 bytes per texel
 
 		const tex = new Uint8Array(width * height * 4);
 
 		for (let i = 0; i < texRaw.length; i += 2) {
-			const color = texRaw[i] | (texRaw[i + 1] << 8);
+			const color = texRaw.readUint16(i);
 
 			tex[i * 2 + 0] = this.color5to8((color >> 0) & 0x1F);
 			tex[i * 2 + 1] = this.color5to8((color >> 5) & 0x1F);
@@ -207,7 +212,7 @@ export class TextureFormats {
 			tex[i * 2 + 3] = ((color >> 15) & 0x01) << 7;
 		}
 
-		return texRaw;
+		return tex;
 	}
 
 	private static color5to8(value: number): number {

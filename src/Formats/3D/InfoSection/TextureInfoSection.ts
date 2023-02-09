@@ -1,9 +1,10 @@
+import { BufferReader } from "../../../BufferReader";
 import { InfoSection } from "./InfoSection";
 
 export class TextureInfoSection extends InfoSection {
 	entries: TextureInfo[];
 
-	parseEntry(raw: Uint8Array): void {
+	parseEntry(raw: BufferReader): void {
 		if (this.entries === undefined) {
 			this.entries = [];
 		}
@@ -13,16 +14,16 @@ export class TextureInfoSection extends InfoSection {
 }
 
 export class TextureInfo {
-	constructor(raw: Uint8Array) {
+	constructor(raw: BufferReader) {
 		// 0x00 (2 bytes): Texture Offset, shift << 3, relative to the start of Texture Data
-		this.textureOffset = (raw[0] | (raw[1] << 8)) << 3;
+		this.textureOffset = (raw.readUint16(0x00)) << 3;
 		// 0x02 (2 bytes): Parameters
 		// --CFFFHHHWWW----
 		// C = First Color Transparent
 		// F = Format
 		// H = Height (8 << Height)
 		// W = Width (8 << Width)
-		const parameters = raw[2] | (raw[3] << 8);
+		const parameters = raw.readUint16(0x02);
 		this.firstColorTransparent	= 	(parameters & 0b0010_0000_0000_0000) >> 13 === 1;
 		this.format					=	(parameters & 0b0001_1100_0000_0000) >> 10;
 		this.height					= 	(parameters & 0b0000_0011_1000_0000) >> 7;

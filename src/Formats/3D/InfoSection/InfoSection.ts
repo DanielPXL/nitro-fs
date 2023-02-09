@@ -1,11 +1,13 @@
+import { BufferReader } from "../../../BufferReader";
+
 export abstract class InfoSection {
-	constructor(raw: Uint8Array) {
+	constructor(raw: BufferReader) {
 		// Header
 		// 0x00 (1 byte): Dummy
 		// 0x01 (1 byte): Number of entries
-		this.numberOfEntries = raw[1];
+		this.numberOfEntries = raw.readUint8(0x01);
 		// 0x02 (2 bytes): Section Size
-		this.sectionSize = raw[2] | (raw[3] << 8);
+		this.sectionSize = raw.readUint16(0x02);
 
 		// Unknown Block
 		// Header is 8 bytes long
@@ -18,7 +20,7 @@ export abstract class InfoSection {
 		// Info Data Block
 		// 0x00 (2 bytes): Header Size
 		// 0x02 (2 bytes): Data Size
-		this.dataSize = raw[offset + 2] | (raw[offset + 3] << 8);
+		this.dataSize = raw.readUint16(offset + 2);
 		const dataSectionSize = (this.dataSize - 4) / this.numberOfEntries;
 		offset += 4;
 
@@ -31,7 +33,7 @@ export abstract class InfoSection {
 		// No header, each name is 16 bytes long
 		this.names = [];
 		for (let i = 0; i < this.numberOfEntries; i++) {
-			this.names.push(String.fromCharCode(...raw.slice(offset, offset + 16)).replace(/\0/g, ""));
+			this.names.push(raw.readChars(offset, offset + 16).replace(/\0/g, ""));
 			offset += 16;
 		}
 	}
@@ -42,5 +44,5 @@ export abstract class InfoSection {
 	dataSize: number;
 	names: string[];
 
-	abstract parseEntry(raw: Uint8Array): void;
+	abstract parseEntry(raw: BufferReader): void;
 }

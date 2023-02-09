@@ -4,7 +4,7 @@ import { NitroFAT } from "./NitroFAT";
 import { NitroFNT } from "./NitroFNT";
 
 export class NitroFS {
-	static async fromRom(rom: ArrayBuffer) {
+	static fromRom(rom: ArrayBuffer) {
 		const nitroFS = new NitroFS();
 
 		const reader = BufferReader.new(rom, true);
@@ -13,26 +13,29 @@ export class NitroFS {
 		const headerBuffer = reader.slice(0, 0x200);
 		nitroFS.cartridgeHeader = new CartridgeHeader(headerBuffer);
 
-		console.log(nitroFS.cartridgeHeader);
 		// Next, skip to the FNT and read it
 		const fntBuffer = reader.slice(nitroFS.cartridgeHeader.fntOffset, nitroFS.cartridgeHeader.fntOffset + nitroFS.cartridgeHeader.fntLength);
 		nitroFS.fnt = new NitroFNT(fntBuffer);
-
-		console.log(nitroFS.fnt);
 
 		// Then, skip to the FAT and read it
 		const fatBuffer = reader.slice(nitroFS.cartridgeHeader.fatOffset, nitroFS.cartridgeHeader.fatOffset + nitroFS.cartridgeHeader.fatLength);
 		const fat = new NitroFAT(fatBuffer);
 
-		// Use file data directly instead of only addresses the FAT in order to save memory
-		nitroFS.fileData = fat.entries.map(entry => reader.slice(entry.startAddress, entry.endAddress));
+		// Use file data directly instead of only addresses in order to save memory
+		// Also, clone the file buffers so that the original buffer can be garbage collected
+		// so that we only have to keep the file data in memory, not the entire ROM
+		nitroFS.fileData = [];
+		for (let i = 0; i < fat.entries.length; i++) {
+			const entry = fat.entries[i];
+			nitroFS.fileData[i] = reader.slice(entry.startAddress, entry.endAddress).getBuffer()
+		}
 
 		return nitroFS;
 	}
 
 	private cartridgeHeader: CartridgeHeader;
 	private fnt: NitroFNT;
-	private fileData: BufferReader[];
+	private fileData: ArrayBuffer[];
 
 	readFile(path: string) {
 		const directoryParts = path.split("/");

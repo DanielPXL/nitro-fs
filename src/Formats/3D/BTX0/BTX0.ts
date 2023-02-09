@@ -1,8 +1,9 @@
+import { BufferReader } from "../../../BufferReader";
 import { TEX0 } from "../TEX0/TEX0";
 import { BTX0Header } from "./BTX0Header";
 
 export class BTX0 {
-	constructor(raw: Uint8Array) {
+	constructor(raw: BufferReader) {
 		this.header = new BTX0Header(raw.slice(0, 0x14));
 
 		if (this.header.magic !== "BTX0") {

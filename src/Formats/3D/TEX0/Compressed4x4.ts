@@ -2,10 +2,12 @@
 // Thank you, MIT License
 // https://github.com/magcius/noclip.website/blob/master/src/SuperMario64DS/nitro_tex.ts
 
-export function readTexture_CMPR_4x4(width: number, height: number, texData: Uint8Array, palIdxData: Uint8Array, palData: Uint8Array): Uint8Array {
+import { BufferReader } from "../../../BufferReader";
+
+export function readTexture_CMPR_4x4(width: number, height: number, texData: BufferReader, palIdxData: BufferReader, palData: BufferReader): Uint8Array {
     function getPal16(offs: number) {
         //return offs < palView.byteLength ? palView.getUint16(offs, true) : 0;
-        return offs < palView.byteLength ? palData[offs] | (palData[offs + 1] << 8) : 0;
+        return offs < palView.length ? palData.readUint16(offs) : 0;
     }
 
     function buildColorTable(palBlock: number) {
@@ -69,9 +71,9 @@ export function readTexture_CMPR_4x4(width: number, height: number, texData: Uin
     for (let yy = 0; yy < height; yy += 4) {
         for (let xx = 0; xx < width; xx += 4) {
             // let texBlock = texView.getUint32((srcOffs * 0x04), true);
-            let texBlock = texView[srcOffs * 0x04 + 0] | (texView[srcOffs * 0x04 + 1] << 8) | (texView[srcOffs * 0x04 + 2] << 16) | (texView[srcOffs * 0x04 + 3] << 24);
+            let texBlock = texView.readUint32(srcOffs * 0x04);
             //const palBlock = palIdxView.getUint16((srcOffs * 0x02), true);
-            const palBlock = palIdxView[srcOffs * 0x02 + 0] | (palIdxView[srcOffs * 0x02 + 1] << 8);
+            const palBlock = palIdxView.readUint16(srcOffs * 0x02);
 
             const colorTable = buildColorTable(palBlock);
 

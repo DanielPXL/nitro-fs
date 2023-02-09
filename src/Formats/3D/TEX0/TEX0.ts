@@ -1,10 +1,11 @@
+import { BufferReader } from "../../../BufferReader";
 import { PaletteInfoSection } from "../InfoSection/PaletteInfoSection";
 import { TextureInfoSection } from "../InfoSection/TextureInfoSection";
 import { TEX0Header } from "./TEX0Header";
 import { TextureFormats } from "./TextureFormats";
 
 export class TEX0 {
-	constructor(raw: Uint8Array) {
+	constructor(raw: BufferReader) {
 		this.raw = raw;
 
 		this.header = new TEX0Header(raw.slice(0, 0x40));
@@ -17,7 +18,7 @@ export class TEX0 {
 		this.paletteInfo = new PaletteInfoSection(raw.slice(this.header.paletteInfoOffset));
 	}
 
-	raw: Uint8Array;
+	raw: BufferReader;
 
 	header: TEX0Header;
 	textureInfo: TextureInfoSection;
