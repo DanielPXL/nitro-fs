@@ -19,7 +19,7 @@ export class BufferReader {
 	}
 
 	slice(start: number, end?: number) {
-		if (end === undefined) {
+		if (end === undefined || end > this.bufferLength) {
 			end = this.bufferLength;
 		}
 
