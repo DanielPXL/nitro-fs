@@ -11,4 +11,3 @@ export class SDAT {
 	header: SDATHeader;
 	fs: SDATFS;
 }
-

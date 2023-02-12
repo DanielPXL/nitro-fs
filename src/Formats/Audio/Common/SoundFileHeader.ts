@@ -2,7 +2,7 @@ import { BufferReader } from "../../../BufferReader";
 
 // https://gota7.github.io/NitroStudio2/specs/common.html
 
-export abstract class SoundFileHeader {
+export class SoundFileHeader {
 	constructor(raw: BufferReader, assertMagic?: string) {
 		// 0x00 (4 bytes) - Magic
 		this.magic = raw.readChars(0x00, 4);
