@@ -1,8 +1,8 @@
+import { BufferReader } from "../../../BufferReader";
+
 // I don't know how this works
 // Thank you, MIT License
 // https://github.com/magcius/noclip.website/blob/master/src/SuperMario64DS/nitro_tex.ts
-
-import { BufferReader } from "../../../BufferReader";
 
 export function readTexture_CMPR_4x4(width: number, height: number, texData: BufferReader, palIdxData: BufferReader, palData: BufferReader): Uint8Array {
     function getPal16(offs: number) {

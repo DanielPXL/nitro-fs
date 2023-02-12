@@ -1,6 +1,6 @@
-// http://llref.emutalk.net/docs/?file=xml/btx0.xml#xml-doc
-
 import { BufferReader } from "../../../BufferReader";
+
+// http://llref.emutalk.net/docs/?file=xml/btx0.xml#xml-doc
 
 export class BTX0Header {
 	constructor(raw: BufferReader) {
