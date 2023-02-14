@@ -26,7 +26,7 @@ export class SDATFS {
 					const fatEntry = fatBlock.entries[info.fileId];
 					const buffer = raw.slice(fatEntry.offset, fatEntry.offset + fatEntry.size);
 
-					files.push(new SoundFile(name, info, buffer));
+					files.push(new SoundFile(name, info, i, buffer));
 				}
 			}
 
@@ -48,13 +48,15 @@ export class SDATFS {
 }
 
 export class SoundFile<T> {
-	constructor(name: string, fileInfo: T, buffer: BufferReader) {
+	constructor(name: string, fileInfo: T, id: number, buffer: BufferReader) {
 		this.name = name;
 		this.fileInfo = fileInfo;
+		this.id = id;
 		this.buffer = buffer;
 	}
 
 	name: string;
 	fileInfo: T;
+	id: number;
 	buffer: BufferReader;
 }
