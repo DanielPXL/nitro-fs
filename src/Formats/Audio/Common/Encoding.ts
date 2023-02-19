@@ -41,7 +41,7 @@ export class Encoding {
 	}
 
 	static IMA_ADPCMtoPCM(raw: BufferReader) {
-		let buffer = new Float32Array(raw.length * 4);
+		let buffer = new Float32Array(raw.length * 2 - 8);
 
 		let destOff = 0;
 		let decompSample = raw.readInt16(0);
@@ -80,10 +80,10 @@ export class Encoding {
 			return (index > max) ? max : ((index < min) ? min : index);
 		}
 
-		let diff = this.adpcmStepTable[stepIndex] / 8;
-		if (nibble & 1) diff += this.adpcmStepTable[stepIndex] / 4;
-		if (nibble & 2) diff += this.adpcmStepTable[stepIndex] / 2;
-		if (nibble & 4) diff += this.adpcmStepTable[stepIndex];
+		let diff = Math.floor(this.adpcmStepTable[stepIndex] / 8);
+		if (nibble & 1) diff += Math.floor(this.adpcmStepTable[stepIndex] / 4);
+		if (nibble & 2) diff += Math.floor(this.adpcmStepTable[stepIndex] / 2);
+		if (nibble & 4) diff += Math.floor(this.adpcmStepTable[stepIndex]);
 
 		if ((nibble & 8) == 0) {
 			decompSample = max(decompSample + diff);

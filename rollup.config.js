@@ -18,7 +18,10 @@ const config = {
 		typescript({ useTsconfigDeclarationDir: true, sourceMap: false }),
 		nodeResolve()
 	],
-	cache: true
+	cache: true,
+	watch: {
+		include: "src/**"
+	}
 };
 
 export default config;
