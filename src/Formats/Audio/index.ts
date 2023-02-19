@@ -19,6 +19,10 @@ export {
 	StreamInfo 
 } from "./SDAT/FileInfo";
 
+export { STRM } from "./STRM/STRM";
+export { STRMDataBlock } from "./STRM/STRMDataBlock";
+export { STRMInfoBlock } from "./STRM/STRMInfoBlock";
+
 export { SWAR } from "./SWAR/SWAR";
 
 export { SWAV, SWAVDataBlock } from "./SWAV/SWAV";
