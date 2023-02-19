@@ -22,7 +22,7 @@ export class STRMDataBlock extends Block {
 		let pcm = [];
 
 		for (let i = 0; i < this.header.channelCount; i++) {
-			pcm.push(new Float32Array(this.header.sampleCount));
+			pcm.push(new Float32Array(this.header.sampleCount + this.header.lastBlockSampleCount));
 			writeOffsetPerChannel.push(0);
 		}
 
