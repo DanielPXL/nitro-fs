@@ -10,7 +10,6 @@ export class STRM {
 		const header = new SoundFileHeader(raw, "STRM");
 		this.infoBlock = new STRMInfoBlock(raw.slice(0x10));
 
-		// TODO: This is a hack, but it works for now.
 		this.dataBlock = new STRMDataBlock(raw.slice(this.infoBlock.dataOffset - 0x08), this.infoBlock);
 	}
 
