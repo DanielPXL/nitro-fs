@@ -92,6 +92,7 @@ export class NitroFS {
 	exists(path: string) {
 		try {
 			this.readFile(path);
+			return true;
 		} catch (e) {
 			return false;
 		}
