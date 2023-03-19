@@ -27,3 +27,16 @@ export { SWAR } from "./SWAR/SWAR";
 
 export { SWAV, SWAVDataBlock } from "./SWAV/SWAV";
 export { SWAVHeader } from "./SWAV/SWAVHeader";
+
+export { SBNK } from "./SBNK/SBNK";
+export { SBNKDataBlock, InstrumentTableEntry } from "./SBNK/SBNKDataBlock";
+export { NoteInfo } from "./SBNK/NoteInfo";
+export {
+	InstrumentType,
+	Instrument,
+	DirectInstrumentType,
+	DirectInstrument,
+	DrumSetInstrument,
+	KeySplitInstrument,
+	ContainedInstrument
+} from "./SBNK/Instrument";
