@@ -99,6 +99,25 @@ export class BufferReader {
 		return result;
 	}
 
+	readVL(offset: number) {
+		let result = 0;
+		let i = 0;
+
+		while (true) {
+			const c = this.view.getUint8(offset + i);
+			result <<= 7;
+			result |= (c & 0x7F);
+
+			if ((c & 0x80) === 0) {
+				break;
+			}
+
+			i++;
+		}
+
+		return { value: result, length: i + 1 };
+	}
+
 	get length() {
 		return this.bufferLength;
 	}

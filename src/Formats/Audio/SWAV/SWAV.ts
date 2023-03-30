@@ -42,11 +42,26 @@ export class SWAVDataBlock extends Block {
 		// 0x04 (2 bytes) - Clock time (16756991 / sampling rate)
 		this.clockTime = raw.readUint16(0x04);
 		// 0x06 (2 bytes) - Loop start
-		this.loopStart = raw.readUint16(0x06);
+		const loopStartOffset = raw.readUint16(0x06);
 		// 0x08 (4 bytes) - Loop end
-		this.loopEnd = raw.readUint32(0x08);
+		const loopEndOffset = raw.readUint32(0x08);
 		// 0x0C (size = BlockSize - 0xC - 0x8) - Audio data
 		this.audioData = raw.slice(0x0C, this.size - 0xC - 0x8);
+
+		switch (this.encoding) {
+			case EncodingType.PCM8:
+				this.loopStart = loopStartOffset;
+				this.loopEnd = loopEndOffset;
+				break;
+			case EncodingType.PCM16:
+				this.loopStart = loopStartOffset / 2;
+				this.loopEnd = loopStartOffset / 2;
+				break;
+			case EncodingType.IMA_ADPCM:
+				this.loopStart = (loopStartOffset * 4) * 2 - 8;
+				this.loopEnd = (loopEndOffset * 4) * 2;
+				break;
+		}
 	}
 
 	encoding: EncodingType;

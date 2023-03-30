@@ -6,6 +6,7 @@ export { EncodingType } from "./Common/Encoding";
 export { SDAT } from "./SDAT/SDAT";
 export { SDATHeader } from "./SDAT/SDATHeader";
 export { SDATFS, SoundFile } from "./SDAT/SDATFS";
+export { InfoBlock } from "./SDAT/InfoBlock";
 export { 
 	SequenceInfo,
 	SequenceArchiveInfo,
@@ -18,6 +19,12 @@ export {
 	StreamPlayerInfo,
 	StreamInfo 
 } from "./SDAT/FileInfo";
+
+export { SSEQ, SSEQDataBlock } from "./SSEQ/SSEQ";
+export { Command, OffsetCommand, Commands } from "./SSEQ/Command";
+export { CommandType, commandTypeToString } from "./SSEQ/CommandType";
+export { CommandParser } from "./SSEQ/CommandParser";
+export { Note, noteToFrequency } from "./SSEQ/Note";
 
 export { STRM } from "./STRM/STRM";
 export { STRMDataBlock } from "./STRM/STRMDataBlock";
@@ -40,3 +47,12 @@ export {
 	KeySplitInstrument,
 	ContainedInstrument
 } from "./SBNK/Instrument";
+
+export { SequenceRenderer } from "./SequenceRenderer/SequenceRenderer";
+export { Track } from "./SequenceRenderer/Track";
+export { Synthesizer } from "./SequenceRenderer/Synthesizer";
+export { SynthChannel } from "./SequenceRenderer/SynthChannel";
+export { PlayingNote } from "./SequenceRenderer/PlayingNote";
+export { PCMPlayingNote } from "./SequenceRenderer/PCMPlayingNote";
+export { Envelope } from "./SequenceRenderer/Envelope";
+export { ADSRConverter } from "./SequenceRenderer/ADSRConverter";

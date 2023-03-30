@@ -12,7 +12,7 @@ export class SDATFS {
 			symbolBlock = new SymbolBlock(raw.slice(header.symbolBlockOffset, header.symbolBlockOffset + header.symbolBlockSize));
 		}
 
-		const infoBlock = new InfoBlock(raw.slice(header.infoBlockOffset, header.infoBlockOffset + header.infoBlockSize));
+		this.infoBlock = new InfoBlock(raw.slice(header.infoBlockOffset, header.infoBlockOffset + header.infoBlockSize));
 		const fatBlock = new FATBlock(raw.slice(header.fileAllocationBlockOffset, header.fileAllocationBlockOffset + header.fileAllocationBlockSize));
 	
 		function collectFiles<T extends {fileId: number}>(symbols: string[], infos: T[]): SoundFile<T>[] {
@@ -33,11 +33,11 @@ export class SDATFS {
 			return files;
 		}
 
-		this.sequences = collectFiles(symbolBlock ? symbolBlock.sequenceSymbols : null, infoBlock.sequenceInfo);
+		this.sequences = collectFiles(symbolBlock ? symbolBlock.sequenceSymbols : null, this.infoBlock.sequenceInfo);
 		//this.sequenceArchives = collectFiles(symbolBlock ? symbolBlock.sequenceArchiveSymbols : null, infoBlock.sequenceArchiveInfo);
-		this.banks = collectFiles(symbolBlock ? symbolBlock.bankSymbols : null, infoBlock.bankInfo);
-		this.waveArchives = collectFiles(symbolBlock ? symbolBlock.waveArchiveSymbols : null, infoBlock.waveArchiveInfo);
-		this.streams = collectFiles(symbolBlock ? symbolBlock.streamSymbols : null, infoBlock.streamInfo);
+		this.banks = collectFiles(symbolBlock ? symbolBlock.bankSymbols : null, this.infoBlock.bankInfo);
+		this.waveArchives = collectFiles(symbolBlock ? symbolBlock.waveArchiveSymbols : null, this.infoBlock.waveArchiveInfo);
+		this.streams = collectFiles(symbolBlock ? symbolBlock.streamSymbols : null, this.infoBlock.streamInfo);
 	}
 
 	sequences: SoundFile<SequenceInfo>[];
@@ -45,6 +45,8 @@ export class SDATFS {
 	banks: SoundFile<BankInfo>[];
 	waveArchives: SoundFile<WaveArchiveInfo>[];
 	streams: SoundFile<StreamInfo>[];
+
+	infoBlock: InfoBlock;
 }
 
 export class SoundFile<T> {
