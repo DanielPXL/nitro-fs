@@ -8,13 +8,15 @@
   "types": "dist/nitro-fs.d.ts",
   "scripts": {
     "build": "rollup -c && api-extractor run --local && rm -r temp/",
-    "dev": "rollup -c --watch --watch.onEnd \"npx api-extractor run --local && rm -r temp/\""
+    "dev": "rollup -c --watch --watch.onEnd \"npx api-extractor run --local && rm -r temp/\"",
+    "buildNoTypes": "rollup -c && rm -r temp/",
+    "devNoTypes": "rollup -c --watch --watch.onEnd \"rm -r temp/\""
   },
   "files": [
     "dist"
   ],
   "author": "DanielPXL",
-  "license": "MIT",
+  "license": "MPL-2.0",
   "devDependencies": {
     "@microsoft/api-extractor": "^7.29.5",
     "@rollup/plugin-node-resolve": "^13.3.0",
