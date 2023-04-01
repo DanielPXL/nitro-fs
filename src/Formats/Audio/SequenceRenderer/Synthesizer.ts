@@ -8,10 +8,11 @@ import { PCMPlayingNote } from "./PCMPlayingNote";
 import { SynthChannel } from "./SynthChannel";
 
 export class Synthesizer {
-	constructor(bank: SBNK, swars: SWAR[], sampleRate: number, sink: (buffer: Float32Array) => void, bufferLength: number = 1024 * 4) {
+	constructor(bank: SBNK, swars: SWAR[], sampleRate: number, bpm: number, sink: (buffer: Float32Array) => void, bufferLength: number = 1024 * 4) {
 		this.bank = bank;
 		this.swars = swars;
 		this.sampleRate = sampleRate;
+		this.bpm = bpm;
 		this.bufferLength = bufferLength;
 		this.flush = sink;
 
@@ -31,6 +32,7 @@ export class Synthesizer {
 	bank: SBNK;
 	swars: SWAR[];
 	sampleRate: number;
+	bpm: number;
 	bufferLength: number;
 	flush: (buffer: Float32Array) => void;
 	timePerSample: number;
@@ -62,8 +64,17 @@ export class Synthesizer {
 		}
 	}
 
-	playNote(track: number, note: Note) {
-		this.channels[track].playNote(this.time, note);
+	playNote(track: number, note: Note, velocity = 127, duration?: number) {
+		// duration -> 48 = 1 quarter note
+		// durationtime = (duration / 48) / (bpm / 60);
+		let stopTime: number | undefined;
+		if (duration) {
+			stopTime = this.time + (duration / 48) / (this.bpm / 60);
+		} else {
+			stopTime = undefined;
+		}
+
+		this.channels[track].playNote(this.time, note, velocity, stopTime);
 	}
 
 	stopNote(track: number) {

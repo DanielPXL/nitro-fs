@@ -11,7 +11,8 @@ export class SBNK {
 		this.data = new SBNKDataBlock(raw.slice(0x10));
 
 		this.instruments = [];
-		for (const entry of this.data.instrumentTable.entries) {
+		for (let i = 0; i < this.data.instrumentTable.entries.length; i++) {
+			const entry = this.data.instrumentTable.entries[i];
 			switch (entry.type) {
 				case InstrumentType.Null:
 					break;
@@ -20,15 +21,15 @@ export class SBNK {
 				case InstrumentType.PSG:
 				case InstrumentType.WhiteNoise:
 				case InstrumentType.DirectPCM:
-					this.instruments.push(new DirectInstrument(raw.slice(entry.dataOffset), entry.type));
+					this.instruments[i] = new DirectInstrument(raw.slice(entry.dataOffset), entry.type);
 					break;
 
 				case InstrumentType.DrumSet:
-					this.instruments.push(new DrumSetInstrument(raw.slice(entry.dataOffset)));
+					this.instruments[i] = new DrumSetInstrument(raw.slice(entry.dataOffset));
 					break;
 
 				case InstrumentType.KeySplit:
-					this.instruments.push(new KeySplitInstrument(raw.slice(entry.dataOffset)));
+					this.instruments[i] = new KeySplitInstrument(raw.slice(entry.dataOffset));
 				break;
 
 				default:

@@ -28,7 +28,9 @@ export class SequenceRenderer {
 			}
 		}
 
-		this.synth = new Synthesizer(sbnk, swar, sampleRate, sink, bufferLength);
+		this.synth = new Synthesizer(sbnk, swar, sampleRate, this.tempo, sink, bufferLength);
+		
+		this.samplesPerTick = SequenceRenderer.TICK_INTERVAL / 1000 * sampleRate;
 
 		this.tracks = [];
 		this.openTrack(0, 0);
@@ -40,22 +42,35 @@ export class SequenceRenderer {
 	sdat: SDAT;
 	sampleRate: number;
 	synth: Synthesizer;
+	samplesPerTick: number;
 	tracks: Track[];
+	tracksStarted: boolean = false;
 
-	cycle: number;
+	cycle: number = 0;
 	tempo: number = 120;
 
 	tick() {
-		this.cycle += this.tempo;
+		this.synth.tick(this.samplesPerTick);
+		
+		this.cycle += (this.tempo);
 		if (this.cycle < 240) {
 			return;
 		}
 
 		this.cycle -= 240;
 
-		for (const track of this.tracks) {
-			if (track) {
-				track.tick();
+		if (this.tracksStarted) {
+			for (const track of this.tracks) {
+				if (track) {
+					track.tick();
+				}
+			}
+		} else {
+			this.tracks[0].tick();
+
+			const nextCommandType = this.sseq.data.commands[this.tracks[0].offset + 1].type;
+			if (nextCommandType === CommandType.AllocateTracks || nextCommandType === CommandType.OpenTrack) {
+				this.tracksStarted = true;
 			}
 		}
 	}
@@ -81,5 +96,6 @@ export class SequenceRenderer {
 
 	private changeTempo(tempo: number) {
 		this.tempo = tempo;
+		this.synth.bpm = tempo;
 	}
 }

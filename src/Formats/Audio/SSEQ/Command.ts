@@ -84,7 +84,7 @@ export namespace Commands {
 		}
 
 		type = CommandType.Variable;
-		length = 0x04;
+		length = 0x03;
 	}
 
 	// 0xA2 (If)
@@ -319,7 +319,7 @@ export namespace Commands {
 
 	// 0xC9 (Portamento)
 	export class Portamento extends Command {
-		constructor(public enabled: boolean) {
+		constructor(public portamento: number) {
 			super();
 		}
 

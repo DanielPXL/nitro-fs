@@ -5,13 +5,15 @@ import { Resampler } from "./Resampler";
 import { PlayingNote } from "./PlayingNote";
 
 export class PCMPlayingNote implements PlayingNote {
-	constructor(note: Note, envelope: Envelope, swav: SWAV, baseNote: Note, sampleRate: number) {
+	constructor(note: Note, envelope: Envelope, swav: SWAV, baseNote: Note, sampleRate: number, velocity: number) {
 		this.note = note;
 		this.envelope = envelope;
 		this.swav = swav;
 		this.baseNote = baseNote;
 		this.sampleRate = sampleRate;
+		this.velocity = velocity / 127;
 
+		// TODO: Move this somewhere else - it's really inefficient to do this every time a note is played
 		this.sample = Resampler.resample(swav.toPCM(), swav.dataBlock.samplingRate, sampleRate);
 
 		if (swav.dataBlock.loop) {
@@ -26,6 +28,7 @@ export class PCMPlayingNote implements PlayingNote {
 	swav: SWAV;
 	baseNote: Note;
 	sampleRate: number;
+	velocity: number;
 
 	sample: Float32Array;
 	loopStartTime: number;
@@ -71,7 +74,10 @@ export class PCMPlayingNote implements PlayingNote {
 				const sampleRight = this.sample[Math.floor(t * this.sampleRate * ratio)];
 				const sampleLeft = this.sample[Math.floor((t - (sampleEndTime - actualLoopStartTime)) * this.sampleRate * ratio)];
 
-				return this.envelope.getGain(time) * (sampleLeft * blendA + sampleRight * blendB);
+				if (sampleLeft === undefined || sampleRight === undefined)
+					return 0;
+
+				return this.velocity * this.envelope.getGain(time) * (sampleLeft * blendA + sampleRight * blendB);
 			}
 		}
 
@@ -81,6 +87,6 @@ export class PCMPlayingNote implements PlayingNote {
 			return 0;
 		}
 
-		return this.envelope.getGain(time) * sample;
+		return this.velocity * this.envelope.getGain(time) * sample;
 	}
 }

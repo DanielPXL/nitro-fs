@@ -109,14 +109,22 @@ export class Track {
 		}
 	}
 
-	private Note(cmd: Commands.Note) {}
-
-	private Wait(cmd: Commands.Wait) {
-		this.wait = cmd.duration;
+	private Note(cmd: Commands.Note) {
+		this.synth.playNote(this.track, cmd.note, cmd.velocity, cmd.duration);
 	}
 
-	private ProgramChange(cmd: Commands.ProgramChange) {}
-	private OpenTrack(cmd: Commands.OpenTrack) {}
+	private Wait(cmd: Commands.Wait) {
+		this.wait = cmd.duration - 1;
+	}
+
+	private ProgramChange(cmd: Commands.ProgramChange) {
+		this.synth.channels[this.track].programNumber = cmd.program;
+	}
+
+	private OpenTrack(cmd: Commands.OpenTrack) {
+		this.openTrackCallback(cmd.track, cmd.offset);
+	}
+
 	private Jump(cmd: Commands.Jump) {
 		// -1 because the pointer will be incremented at the end of the tick
 		this.pointer = cmd.offset - 1;
@@ -145,7 +153,12 @@ export class Track {
 	private CompareLess(cmd: Commands.CompareLess) {}
 	private CompareNotEqual(cmd: Commands.CompareNotEqual) {}
 	private Pan(cmd: Commands.Pan) {}
-	private Volume(cmd: Commands.Volume) {}
+
+	private Volume(cmd: Commands.Volume) {
+		// realVolume = (volume / 127)^2
+		this.synth.channels[this.track].volume1 = (cmd.volume / 127) * (cmd.volume / 127);
+	}
+
 	private MainVolume(cmd: Commands.MainVolume) {}
 	private Transpose(cmd: Commands.Transpose) {}
 	private PitchBend(cmd: Commands.PitchBend) {}
@@ -165,7 +178,12 @@ export class Track {
 	private Sustain(cmd: Commands.Sustain) {}
 	private Release(cmd: Commands.Release) {}
 	private LoopStart(cmd: Commands.LoopStart) {}
-	private Volume2(cmd: Commands.Volume2) {}
+
+	private Volume2(cmd: Commands.Volume2) {
+		// realVolume = (volume / 127)^2
+		this.synth.channels[this.track].volume2 = (cmd.volume / 127) * (cmd.volume / 127);
+	}
+
 	private PrintVariable(cmd: Commands.PrintVariable) {}
 	private ModulationDelay(cmd: Commands.ModulationDelay) {}
 
