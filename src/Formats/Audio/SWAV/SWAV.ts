@@ -41,25 +41,26 @@ export class SWAVDataBlock extends Block {
 		this.samplingRate = raw.readUint16(0x02);
 		// 0x04 (2 bytes) - Clock time (16756991 / sampling rate)
 		this.clockTime = raw.readUint16(0x04);
-		// 0x06 (2 bytes) - Loop start
+		// 0x06 (2 bytes) - Loop start (in 32-bit words)
 		const loopStartOffset = raw.readUint16(0x06);
-		// 0x08 (4 bytes) - Loop end
-		const loopEndOffset = raw.readUint32(0x08);
+		// 0x08 (4 bytes) - Loop length (in 32-bit words)
+		const loopLengthOffset = raw.readUint32(0x08);
 		// 0x0C (size = BlockSize - 0xC - 0x8) - Audio data
-		this.audioData = raw.slice(0x0C, this.size - 0xC - 0x8);
+		// this.audioData = raw.slice(0x0C, this.size - 0xC - 0x8);
+		this.audioData = raw.slice(0x0C, 0x0C + loopStartOffset * 4 + loopLengthOffset * 4);
 
 		switch (this.encoding) {
 			case EncodingType.PCM8:
-				this.loopStart = loopStartOffset;
-				this.loopEnd = loopEndOffset;
+				this.loopStart = loopStartOffset * 4;
+				this.loopLength = loopLengthOffset * 4;
 				break;
 			case EncodingType.PCM16:
-				this.loopStart = loopStartOffset / 2;
-				this.loopEnd = loopStartOffset / 2;
+				this.loopStart = (loopStartOffset * 4) / 2;
+				this.loopLength = (loopStartOffset * 4) / 2;
 				break;
 			case EncodingType.IMA_ADPCM:
 				this.loopStart = (loopStartOffset * 4) * 2 - 8;
-				this.loopEnd = (loopEndOffset * 4) * 2;
+				this.loopLength = (loopLengthOffset * 4) * 2;
 				break;
 		}
 	}
@@ -69,6 +70,6 @@ export class SWAVDataBlock extends Block {
 	samplingRate: number;
 	clockTime: number;
 	loopStart: number;
-	loopEnd: number;
+	loopLength: number;
 	audioData: BufferReader;
 }

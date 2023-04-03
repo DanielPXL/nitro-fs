@@ -99,9 +99,9 @@ export class Track {
 		while (this.wait === 0) {
 			const command = this.sseq.data.commands[this.pointer];
 			
-			if (this.track === 0) {
-				console.log("[" + this.pointer + "] " + commandTypeToString(command.type) + " : " + JSON.stringify(command));
-			}
+			// if (this.track === 0) {
+			// 	console.log("[" + this.pointer + "] " + commandTypeToString(command.type) + " : " + JSON.stringify(command));
+			// }
 			
 			this.handlers[command.type].bind(this)(command as any);
 

@@ -129,12 +129,16 @@ export enum Note {
 	G9 = 127,
 }
 
-const noteToFrequencies: number[] = []
+const noteToFrequencies: number[] = [];
 
 for (let i = 0; i < 128; i++) {
-	noteToFrequencies[i] = 440 * Math.pow(2, (i - 69) / 12)
+	noteToFrequencies[i] = 440 * Math.pow(2, (i - 69) / 12);
 }
 
 export function noteToFrequency(note: Note) {
-	return noteToFrequencies[note]
+	if (noteToFrequencies[note]) {
+		return noteToFrequencies[note];
+	}
+
+	return 440 * Math.pow(2, (note - 69) / 12);
 }
