@@ -44,23 +44,21 @@ export class Synthesizer {
 	channels: SynthChannel[];
 
 	tick(numSamples: number) {
-		// const fullTime = this.time + (this.pos * this.timePerSample);
-
 		for (let i = 0; i < numSamples; i++) {
 			let sample = 0;
 
 			for (let j = 0; j < this.channels.length; j++) {
-				sample += this.channels[j].getValue(this.time);
+				sample += this.channels[j].getValue(this.time) / 4;
 			}
 
 			this.buffer[this.pos] = sample;
 			this.pos++;
 			this.time += this.timePerSample;
-		}
 
-		if (this.pos >= this.bufferLength) {
-			this.pos = 0;
-			this.flush(this.buffer);
+			if (this.pos >= this.bufferLength) {
+				this.pos = 0;
+				this.flush(this.buffer);
+			}
 		}
 	}
 

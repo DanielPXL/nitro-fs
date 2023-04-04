@@ -5,13 +5,14 @@ import { Resampler } from "./Resampler";
 import { PlayingNote } from "./PlayingNote";
 
 export class PCMPlayingNote implements PlayingNote {
-	constructor(note: Note, envelope: Envelope, swav: SWAV, baseNote: Note, sampleRate: number, velocity: number) {
+	constructor(note: Note, envelope: Envelope, swav: SWAV, baseNote: Note, sampleRate: number, velocity: number, doneCallback: () => void) {
 		this.note = note;
 		this.envelope = envelope;
 		this.swav = swav;
 		this.baseNote = baseNote;
 		this.sampleRate = sampleRate;
 		this.velocity = velocity / 127;
+		this.doneCallback = doneCallback;
 
 		this.sample = swav.toPCM();
 	}
@@ -22,6 +23,7 @@ export class PCMPlayingNote implements PlayingNote {
 	baseNote: Note;
 	sampleRate: number;
 	velocity: number;
+	doneCallback: () => void;
 
 	sample: Float32Array;
 
@@ -42,7 +44,8 @@ export class PCMPlayingNote implements PlayingNote {
 			this.swav.dataBlock.loop ? this.swav.dataBlock.loopLength : undefined
 		);
 
-		if (sample === undefined || Number.isNaN(sample)) {
+		if (this.envelope.isDone) {
+			this.doneCallback();
 			return 0;
 		}
 

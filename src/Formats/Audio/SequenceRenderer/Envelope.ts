@@ -11,8 +11,8 @@ export class Envelope {
 		}
 
 		this.attackEndTime = startTime + ADSRConverter.convertAttack(attackRate);
-		this.decayEndTime = this.attackEndTime + ADSRConverter.convertFall(decayRate);
-		this.releaseTimeNeeded = ADSRConverter.convertFall(releaseRate);
+		this.decayEndTime = this.attackEndTime + ADSRConverter.convertDecay(decayRate);
+		this.releaseRate = releaseRate;
 
 		this.sustainLevel = ADSRConverter.convertSustain(sustainLevel);
 	}
@@ -24,8 +24,11 @@ export class Envelope {
 
 	attackEndTime: number;
 	decayEndTime: number;
-	releaseTimeNeeded: number;
 	sustainLevel: number;
+
+	releaseRate: number;
+
+	isDone = false;
 
 	getGain(time: number): number {
 		// Note is on
@@ -53,7 +56,7 @@ export class Envelope {
 			return this.normalize(this.sustainLevel);
 		} else {
 			// Note is off
-			if (time < this.startTime || time > this.stopTime + this.releaseTimeNeeded) {
+			if (time < this.startTime) {
 				return this.normalize(-92544);
 			}
 
@@ -70,10 +73,16 @@ export class Envelope {
 				amplitudeAtStop = this.sustainLevel * stopT;
 			}
 
-			// console.log(msg + amplitudeAtStop);
+			// TODO: Something is wrong about the release, but it sounds close enough if we divide by 4
+			const releaseTimeNeeded = ADSRConverter.convertRelease(this.releaseRate, amplitudeAtStop) / 4;
+
+			if (time > this.stopTime + releaseTimeNeeded) {
+				this.isDone = true;
+				return this.normalize(-92544);
+			}
 
 			// Amplitude falls linearly to -92544
-			const t = (time - this.stopTime) / this.releaseTimeNeeded;
+			const t = (time - this.stopTime) / releaseTimeNeeded;
 			return this.normalize(amplitudeAtStop - (92544 + amplitudeAtStop) * t);
 		}
 	}
@@ -83,6 +92,14 @@ export class Envelope {
 	}
 
 	normalize(gain: number) {
+		if (gain < -92544) {
+			return 0;
+		}
+
+		if (gain > 0) {
+			return 1;
+		}
+
 		return (gain + 92544) / 92544;
 	}
 }

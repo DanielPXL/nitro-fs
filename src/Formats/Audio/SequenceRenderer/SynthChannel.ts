@@ -24,14 +24,17 @@ export class SynthChannel {
 
 	volume1 = 1;
 	volume2 = 1;
-	playing: PlayingNote = null;
+	playing: PlayingNote[] = [];
 
 	getValue(time: number) {
-		if (this.playing === null) {
-			return 0;
+		let sum = 0;
+		for (let i = 0; i < this.playing.length; i++) {
+			if (this.playing[i]) {
+				sum += this.playing[i].getValue(time);
+			}
 		}
 
-		return this.playing.getValue(time) * this.volume1 * this.volume2;
+		return sum * this.volume1 * this.volume2;
 	}
 	
 	playNote(time: number, note: Note, velocity: number, stopTime?: number) {
@@ -45,7 +48,11 @@ export class SynthChannel {
 		const swav = swar.waves[noteInfo.waveId];
 
 		const envelope = new Envelope(time, noteInfo.attack, noteInfo.decay, noteInfo.sustain, noteInfo.release, stopTime);
-		this.playing = new PCMPlayingNote(note, envelope, swav, noteInfo.baseNote, this.sampleRate, velocity);
+
+		const index = this.findFirstEmpty();
+		this.playing[index] = new PCMPlayingNote(note, envelope, swav, noteInfo.baseNote, this.sampleRate, velocity, () => {
+			this.playing[index] = null;
+		});
 	}
 
 	getNoteInfo(note: Note): NoteInfo {
@@ -100,10 +107,24 @@ export class SynthChannel {
 	}
 
 	releaseNote(time: number) {
-		this.playing.release(time);
+		for (let i = 0; i < this.playing.length; i++) {
+			if (this.playing[i]) {
+				this.playing[i].release(time);
+			}
+		}
 	}
 
 	changeProgram(programNumber: number) {
 		this.programNumber = programNumber;
+	}
+
+	private findFirstEmpty() {
+		for (let i = 0; i < this.playing.length; i++) {
+			if (this.playing[i] === null) {
+				return i;
+			}
+		}
+
+		return this.playing.length;
 	}
 }
