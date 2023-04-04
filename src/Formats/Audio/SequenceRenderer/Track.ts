@@ -76,6 +76,10 @@ export class Track {
 		[CommandType.Fin]: this.Fin
 	}
 
+	// DEBUG
+	active: boolean = true;
+	// -----
+
 	track: number;
 	offset: number;
 	sseq: SSEQ;
@@ -110,6 +114,8 @@ export class Track {
 	}
 
 	private Note(cmd: Commands.Note) {
+		if (!this.active) return;
+
 		this.synth.playNote(this.track, cmd.note, cmd.velocity, cmd.duration);
 	}
 
@@ -152,7 +158,13 @@ export class Track {
 	private CompareLessOrEqual(cmd: Commands.CompareLessOrEqual) {}
 	private CompareLess(cmd: Commands.CompareLess) {}
 	private CompareNotEqual(cmd: Commands.CompareNotEqual) {}
-	private Pan(cmd: Commands.Pan) {}
+	private Pan(cmd: Commands.Pan) {
+		if (cmd.pan < 64) {
+			this.synth.channels[this.track].pan = (cmd.pan - 64) / 64;
+		} else {
+			this.synth.channels[this.track].pan = (cmd.pan - 64) / 63;
+		}
+	}
 
 	private Volume(cmd: Commands.Volume) {
 		// realVolume = (volume / 127)^2

@@ -24,6 +24,7 @@ export class SynthChannel {
 
 	volume1 = 1;
 	volume2 = 1;
+	pan = 0;
 	playing: PlayingNote[] = [];
 
 	getValue(time: number) {
@@ -34,7 +35,12 @@ export class SynthChannel {
 			}
 		}
 
-		return sum * this.volume1 * this.volume2;
+		const leftWeight = Math.min(1, Math.max(0, 1 - this.pan));
+		const rightWeight = Math.min(1, Math.max(0, 1 + this.pan));
+
+		const left = sum * leftWeight * this.volume1 * this.volume2;
+		const right = sum * rightWeight * this.volume1 * this.volume2;
+		return [left, right];
 	}
 	
 	playNote(time: number, note: Note, velocity: number, stopTime?: number) {

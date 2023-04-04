@@ -9,7 +9,7 @@ import { SWAR } from "../SWAR/SWAR";
 import { SequenceInfo } from "../SDAT/FileInfo";
 
 export class SequenceRenderer {
-	constructor(sseq: SSEQ, sseqInfo: SequenceInfo, sdat: SDAT, sampleRate: number, sink: (buffer: Float32Array) => void, bufferLength = 1024 * 4) {
+	constructor(sseq: SSEQ, sseqInfo: SequenceInfo, sdat: SDAT, sampleRate: number, sink: (buffer: Float32Array[]) => void, bufferLength = 1024 * 4) {
 		this.sseq = sseq;
 		this.sdat = sdat;
 		this.sampleRate = sampleRate;

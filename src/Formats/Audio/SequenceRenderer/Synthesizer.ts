@@ -8,7 +8,7 @@ import { PCMPlayingNote } from "./PCMPlayingNote";
 import { SynthChannel } from "./SynthChannel";
 
 export class Synthesizer {
-	constructor(bank: SBNK, swars: SWAR[], sampleRate: number, bpm: number, sink: (buffer: Float32Array) => void, bufferLength: number = 1024 * 4) {
+	constructor(bank: SBNK, swars: SWAR[], sampleRate: number, bpm: number, sink: (buffer: Float32Array[]) => void, bufferLength: number = 1024 * 4) {
 		this.bank = bank;
 		this.swars = swars;
 		this.sampleRate = sampleRate;
@@ -20,7 +20,12 @@ export class Synthesizer {
 			throw new Error("Buffer length must be a multiple of 2");
 		}
 
-		this.buffer = new Float32Array(this.bufferLength);
+		this.buffer = [];
+		
+		for (let i = 0; i < 2; i++) {
+			this.buffer[i] = new Float32Array(this.bufferLength);
+		}
+
 		this.timePerSample = 1 / this.sampleRate;
 
 		this.channels = [];
@@ -34,10 +39,10 @@ export class Synthesizer {
 	sampleRate: number;
 	bpm: number;
 	bufferLength: number;
-	flush: (buffer: Float32Array) => void;
+	flush: (buffer: Float32Array[]) => void;
 	timePerSample: number;
 
-	buffer: Float32Array;
+	buffer: Float32Array[];
 	pos = 0;
 	time = 0;
 
@@ -45,13 +50,19 @@ export class Synthesizer {
 
 	tick(numSamples: number) {
 		for (let i = 0; i < numSamples; i++) {
-			let sample = 0;
+			let sample: number[] = new Array(2).fill(0);
 
 			for (let j = 0; j < this.channels.length; j++) {
-				sample += this.channels[j].getValue(this.time) / 4;
+				const samples = this.channels[j].getValue(this.time);
+				for (let k = 0; k < samples.length; k++) {
+					sample[k] += samples[k] / 4;
+				}
 			}
 
-			this.buffer[this.pos] = sample;
+			for (let j = 0; j < sample.length; j++) {
+				this.buffer[j][this.pos] = sample[j];
+			}
+			
 			this.pos++;
 			this.time += this.timePerSample;
 
