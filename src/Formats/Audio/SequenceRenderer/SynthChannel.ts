@@ -6,6 +6,7 @@ import { Note } from "../SSEQ/Note";
 import { SWAR } from "../SWAR/SWAR";
 import { Envelope } from "./Envelope";
 import { PCMPlayingNote } from "./PCMPlayingNote";
+import { PSGPlayingNote } from "./PSGPlayingNote";
 import { PlayingNote } from "./PlayingNote";
 
 export class SynthChannel {
@@ -44,46 +45,64 @@ export class SynthChannel {
 	}
 	
 	playNote(time: number, note: Note, velocity: number, stopTime?: number) {
-		const noteInfo = this.getNoteInfo(note);
+		const { noteInfo, isPSG } = this.getNoteInfo(note);
 		if (noteInfo === null || noteInfo === undefined) {
-			console.log("Note not found in instrument.");
+			console.log("Note or instrument not found in bank.");
 			return;
 		}
 
-		const swar = this.swars[noteInfo.waveArchiveId];
-		const swav = swar.waves[noteInfo.waveId];
+		if (isPSG) {
+			const dutyCycle = noteInfo.waveId;
+			const envelope = new Envelope(time, noteInfo.attack, noteInfo.decay, noteInfo.sustain, noteInfo.release, stopTime);
 
-		const envelope = new Envelope(time, noteInfo.attack, noteInfo.decay, noteInfo.sustain, noteInfo.release, stopTime);
-
-		const index = this.findFirstEmpty();
-		this.playing[index] = new PCMPlayingNote(note, envelope, swav, noteInfo.baseNote, this.sampleRate, velocity, () => {
-			this.playing[index] = null;
-		});
+			const index = this.findFirstEmpty();
+			this.playing[index] = new PSGPlayingNote(note, envelope, dutyCycle, velocity, () => {
+				this.playing[index] = null;
+			});
+		} else {
+			const swar = this.swars[noteInfo.waveArchiveId];
+			const swav = swar.waves[noteInfo.waveId];
+	
+			const envelope = new Envelope(time, noteInfo.attack, noteInfo.decay, noteInfo.sustain, noteInfo.release, stopTime);
+	
+			const index = this.findFirstEmpty();
+			this.playing[index] = new PCMPlayingNote(note, envelope, swav, noteInfo.baseNote, this.sampleRate, velocity, () => {
+				this.playing[index] = null;
+			});
+		}
 	}
 
-	getNoteInfo(note: Note): NoteInfo {
+	getNoteInfo(note: Note): { noteInfo: NoteInfo, isPSG: boolean } {
+		if (this.bank.instruments[this.programNumber] === undefined) {
+			return { noteInfo: null, isPSG: false };
+		}
+
 		switch (this.bank.instruments[this.programNumber].type) {
-			case InstrumentType.PSG:
 			case InstrumentType.WhiteNoise: {
-				console.log("PSG and WhiteNoise instruments are not supported yet.");
-				return;
+				console.log("WhiteNoise instruments are not supported yet.");
+				return { noteInfo: null, isPSG: false };
+			}
+
+			case InstrumentType.PSG: {
+				const instrument = this.bank.instruments[this.programNumber] as DirectInstrument;
+				return { noteInfo: instrument.noteInfo, isPSG: true };
 			}
 
 			case InstrumentType.PCM:
 			case InstrumentType.DirectPCM: {
 				const instrument = this.bank.instruments[this.programNumber] as DirectInstrument;
-				return instrument.noteInfo;
+				return { noteInfo: instrument.noteInfo, isPSG: false };
 			}
 
 			case InstrumentType.DrumSet: {
 				const drumSet = this.bank.instruments[this.programNumber] as DrumSetInstrument;
 
 				if (note < drumSet.lowerKey || note > drumSet.upperKey) {
-					return;
+					return { noteInfo: null, isPSG: false };
 				}
 
 				const instrument = drumSet.instruments[note - drumSet.lowerKey];
-				return instrument.noteInfo;
+				return { noteInfo: instrument.noteInfo, isPSG: false };
 			}
 
 			case InstrumentType.KeySplit: {
@@ -102,12 +121,12 @@ export class SynthChannel {
 					i++;
 
 					if (i >= keySplit.regions.length) {
-						return;
+						return { noteInfo: null, isPSG: false };
 					}
 				}
 
 				const instrument = keySplit.instruments[region];
-				return instrument.noteInfo;				
+				return { noteInfo: instrument.noteInfo, isPSG: false };			
 			}
 		}
 	}
