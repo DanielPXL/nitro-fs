@@ -15,6 +15,11 @@ export class PSGPlayingNote implements PlayingNote {
 	envelope: Envelope;
 	dutyCycle: number;
 	velocity: number;
+
+	// As far as I can tell, pitch bend is not supported by PSG notes
+	// It needs to be here to satisfy the PlayingNote interface though
+	pitchBend = 0;
+
 	doneCallback: () => void;
 
 	getValue(time: number): number {

@@ -23,6 +23,7 @@ export class PCMPlayingNote implements PlayingNote {
 	baseNote: Note;
 	sampleRate: number;
 	velocity: number;
+	pitchBend = 0;
 	doneCallback: () => void;
 
 	sample: Float32Array;
@@ -32,7 +33,8 @@ export class PCMPlayingNote implements PlayingNote {
 	}
 
 	getValue(time: number) {
-		const ratio = noteToFrequency(this.note) / noteToFrequency(this.baseNote);
+		const ratio = noteToFrequency(this.note + this.pitchBend) / noteToFrequency(this.baseNote);
+
 		let t = (time - this.envelope.startTime);
 
 		const sample = Resampler.singleSample(

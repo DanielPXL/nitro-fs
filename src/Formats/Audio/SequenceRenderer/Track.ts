@@ -8,13 +8,14 @@ import { SWAR } from "../SWAR/SWAR";
 import { Synthesizer } from "./Synthesizer";
 
 export class Track {	
-	constructor(track: number, offset: number, sseq: SSEQ, sdat: SDAT, synth: Synthesizer, sampleRate: number, changeTempo: (tempo: number) => void, openTrack: (track: number, offset: number) => void) {
+	constructor(track: number, offset: number, sseq: SSEQ, sdat: SDAT, synth: Synthesizer, sampleRate: number, stopTrack: () => void, changeTempo: (tempo: number) => void, openTrack: (track: number, offset: number) => void) {
 		this.track = track;
 		this.offset = offset;
 		this.sseq = sseq;
 		this.sdat = sdat;
 		this.sampleRate = sampleRate;
 		this.synth = synth;
+		this.stopTrackCallback = stopTrack;
 		this.changeTempoCallback = changeTempo;
 		this.openTrackCallback = openTrack;
 		
@@ -79,37 +80,45 @@ export class Track {
 	// DEBUG
 	active: boolean = true;
 	// -----
-
+	
 	track: number;
 	offset: number;
 	sseq: SSEQ;
 	sdat: SDAT;
 	sampleRate: number;
 	synth: Synthesizer;
+	
+	stopTrackCallback: (track: number) => void;
 	changeTempoCallback: (tempo: number) => void;
 	openTrackCallback: (track: number, offset: number) => void;
-
+	
 	pointer: number;
-
+	
 	wait: number = 0;
 	callReturnStack: number[] = [];
+	pitchBendRange: number = 0;
+	pitchBend: number = 0;
 
 	tick() {
-		if (this.wait > 0) {
-			this.wait--;
-			return;
-		}
-
 		while (this.wait === 0) {
 			const command = this.sseq.data.commands[this.pointer];
+
+			if (command === undefined) {
+				this.stopTrackCallback(this.track);
+				return;
+			}
 			
-			// if (this.track === 0) {
-			// 	console.log("[" + this.pointer + "] " + commandTypeToString(command.type) + " : " + JSON.stringify(command));
+			// if (this.track === 1) {
+			// 	console.log("[" + this.pointer.toString(16).toUpperCase() + "] " + commandTypeToString(command.type) + " : " + JSON.stringify(command));
 			// }
 			
 			this.handlers[command.type].bind(this)(command as any);
 
 			this.pointer++;
+		}
+
+		if (this.wait > 0) {
+			this.wait--;
 		}
 	}
 
@@ -120,7 +129,7 @@ export class Track {
 	}
 
 	private Wait(cmd: Commands.Wait) {
-		this.wait = cmd.duration - 1;
+		this.wait = cmd.duration;
 	}
 
 	private ProgramChange(cmd: Commands.ProgramChange) {
@@ -158,6 +167,7 @@ export class Track {
 	private CompareLessOrEqual(cmd: Commands.CompareLessOrEqual) {}
 	private CompareLess(cmd: Commands.CompareLess) {}
 	private CompareNotEqual(cmd: Commands.CompareNotEqual) {}
+
 	private Pan(cmd: Commands.Pan) {
 		if (cmd.pan < 64) {
 			this.synth.channels[this.track].pan = (cmd.pan - 64) / 64;
@@ -173,8 +183,29 @@ export class Track {
 
 	private MainVolume(cmd: Commands.MainVolume) {}
 	private Transpose(cmd: Commands.Transpose) {}
-	private PitchBend(cmd: Commands.PitchBend) {}
-	private PitchBendRange(cmd: Commands.PitchBendRange) {}
+
+	private PitchBend(cmd: Commands.PitchBend) {
+		// Pitch bend is between -128 and 127
+		let bendNormalized = 0;
+		if (cmd.bend > 0) {
+			bendNormalized = cmd.bend / 127;
+		} else {
+			bendNormalized = cmd.bend / 128;
+		}
+
+		this.pitchBend = bendNormalized;
+
+		const semitones = this.pitchBend * this.pitchBendRange;
+		this.synth.channels[this.track].pitchBend(semitones);
+	}
+
+	private PitchBendRange(cmd: Commands.PitchBendRange) {
+		this.pitchBendRange = cmd.range;
+
+		const semitones = this.pitchBend * this.pitchBendRange;
+		this.synth.channels[this.track].pitchBend(semitones);
+	}
+
 	private Priority(cmd: Commands.Priority) {}
 	private NoteWaitMode(cmd: Commands.NoteWaitMode) {}
 	private Tie(cmd: Commands.Tie) {}
@@ -211,5 +242,8 @@ export class Track {
 	}
 
 	private AllocateTracks(cmd: Commands.AllocateTracks) {}
-	private Fin(cmd: Commands.Fin) {}
+
+	private Fin(cmd: Commands.Fin) {
+		this.stopTrackCallback(this.track);
+	}
 }

@@ -143,6 +143,14 @@ export class SynthChannel {
 		this.programNumber = programNumber;
 	}
 
+	pitchBend(semitones: number) {
+		for (let i = 0; i < this.playing.length; i++) {
+			if (this.playing[i]) {
+				this.playing[i].pitchBend = semitones;
+			}
+		}
+	}
+
 	private findFirstEmpty() {
 		for (let i = 0; i < this.playing.length; i++) {
 			if (this.playing[i] === null) {

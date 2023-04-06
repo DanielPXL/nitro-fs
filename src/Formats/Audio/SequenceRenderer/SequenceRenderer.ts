@@ -87,11 +87,16 @@ export class SequenceRenderer {
 			this.sdat,
 			this.synth,
 			this.sampleRate,
+			this.stopTrack.bind(this),
 			this.changeTempo.bind(this),
 			this.openTrack.bind(this)
 		);
 
 		this.tracks[track] = t;	
+	}
+
+	private stopTrack(track: number) {
+		this.tracks[track] = null;
 	}
 
 	private changeTempo(tempo: number) {
