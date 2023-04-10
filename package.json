@@ -1,16 +1,30 @@
 {
   "name": "nitro-fs",
   "version": "1.0.0",
-  "description": "",
+  "description": "Library for reading the Nitro SDK Filesystem, used on most NDS games, and parsing files like textures and sound",
   "type": "module",
   "main": "dist/nitro-fs.js",
   "module": "dist/nitro-fs.js",
   "types": "dist/nitro-fs.d.ts",
+  "keywords": [
+    "nitro",
+    "nds",
+    "twl",
+    "ds",
+    "filesystem",
+    "nitro-fs",
+    "audio",
+    "texture",
+    "sound",
+    "sdat",
+    "sseq",
+    "strm"
+  ],
   "scripts": {
-    "build": "rollup -c && api-extractor run --local && rm -r temp/",
-    "dev": "rollup -c --watch --watch.onEnd \"npx api-extractor run --local && rm -r temp/\"",
-    "buildNoTypes": "rollup -c && rm -r temp/",
-    "devNoTypes": "rollup -c --watch --watch.onEnd \"rm -r temp/\""
+    "build": "rollup -c && api-extractor run --local && rm -r dist/temp/",
+    "dev": "rollup -c --watch --watch.onEnd \"npx api-extractor run --local && rm -r dist/temp/\"",
+    "buildNoTypes": "rollup -c && rm -r dist/temp/",
+    "devNoTypes": "rollup -c --watch --watch.onEnd \"rm -r dist/temp/\""
   },
   "files": [
     "dist"
@@ -18,10 +32,11 @@
   "author": "DanielPXL",
   "license": "MPL-2.0",
   "devDependencies": {
-    "@microsoft/api-extractor": "^7.29.5",
-    "@rollup/plugin-node-resolve": "^13.3.0",
-    "rollup": "^2.78.1",
-    "rollup-plugin-typescript2": "^0.33.0",
-    "typescript": "^4.8.2"
+    "@microsoft/api-extractor": "^7.34.4",
+    "@rollup/plugin-node-resolve": "^15.0.2",
+    "@rollup/plugin-typescript": "^11.1.0",
+    "rollup": "^3.20.2",
+    "tslib": "^2.5.0",
+    "typescript": "^5.0.3"
   }
 }

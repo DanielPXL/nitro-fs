@@ -1,5 +1,5 @@
-import typescript from 'rollup-plugin-typescript2';
-import { nodeResolve } from '@rollup/plugin-node-resolve';
+import typescript from "@rollup/plugin-typescript";
+import { nodeResolve } from "@rollup/plugin-node-resolve";
 
 // rollup.config.js
 /**
@@ -10,12 +10,11 @@ const config = {
 	output: [
 		{
 			file: "dist/nitro-fs.js",
-			format: "esm",
-			sourcemap: true
+			format: "esm"
 		}
 	],
 	plugins: [
-		typescript({ useTsconfigDeclarationDir: true, sourceMap: false }),
+		typescript({ tsconfig: "./tsconfig.json" }),
 		nodeResolve()
 	],
 	cache: true,
