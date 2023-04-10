@@ -23,34 +23,47 @@ export class PCMPlayingNote implements PlayingNote {
 	baseNote: Note;
 	sampleRate: number;
 	velocity: number;
-	pitchBend = 0;
+	pitchBendValue = 0;
 	doneCallback: () => void;
-
+	
 	sample: Float32Array;
+	sampleIndex = 0;
 
 	release(time: number) {
 		this.envelope.release(time);
 	}
 
 	getValue(time: number) {
-		const ratio = noteToFrequency(this.note + this.pitchBend) / noteToFrequency(this.baseNote);
-
-		let t = (time - this.envelope.startTime);
+		const ratio = noteToFrequency(this.note + this.pitchBendValue) / noteToFrequency(this.baseNote);
 
 		const sample = Resampler.singleSample(
 			this.sample,
 			this.swav.dataBlock.samplingRate, 
 			this.sampleRate / ratio,
-			Math.floor(t * this.sampleRate),
+			Math.floor(this.sampleIndex),
 			this.swav.dataBlock.loop ? this.swav.dataBlock.loopStart : undefined,
 			this.swav.dataBlock.loop ? this.swav.dataBlock.loopLength : undefined
 		);
 
-		if (this.envelope.isDone) {
+		// I hate this, I don't want to keep state in here, but this is the easiest way to implement pitch bend
+		this.sampleIndex += 1;
+
+		if (sample === null || this.envelope.isDone) {
 			this.doneCallback();
 			return 0;
 		}
 
 		return this.velocity * this.envelope.getGain(time) * sample;
+	}
+
+	pitchBend(semitones: number) {
+		const freqBefore = noteToFrequency(this.note + this.pitchBendValue);
+
+		this.pitchBendValue = semitones;
+
+		const freqAfter = noteToFrequency(this.note + this.pitchBendValue);
+		const ratio = freqAfter / freqBefore;
+
+		this.sampleIndex = this.sampleIndex / ratio;
 	}
 }

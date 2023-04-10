@@ -146,7 +146,7 @@ export class SynthChannel {
 	pitchBend(semitones: number) {
 		for (let i = 0; i < this.playing.length; i++) {
 			if (this.playing[i]) {
-				this.playing[i].pitchBend = semitones;
+				this.playing[i].pitchBend(semitones);
 			}
 		}
 	}

@@ -18,7 +18,7 @@ export class PSGPlayingNote implements PlayingNote {
 
 	// As far as I can tell, pitch bend is not supported by PSG notes
 	// It needs to be here to satisfy the PlayingNote interface though
-	pitchBend = 0;
+	pitchBend(semitones: number) { }
 
 	doneCallback: () => void;
 

@@ -3,12 +3,19 @@ import { SWAV } from "../SWAV/SWAV";
 export class Resampler {
 	private static readonly SINC_WINDOW = 5;
 
-	static singleSample(source: Float32Array, sourceRate: number, targetRate: number, index: number, loopStartIndex?: number, loopLength?: number): number {
+	static singleSample(source: Float32Array, sourceRate: number, targetRate: number, index: number, loopStartIndex?: number, loopLength?: number) {
 		const ratio = targetRate / sourceRate;
 
-		if ((loopStartIndex === undefined || loopLength === undefined) && (index < 0 || index / ratio >= source.length)) {
-			return 0;
+		if ((loopStartIndex === undefined || loopLength === undefined)) {
+			if (index < 0) {
+				return 0;
+			}
+
+			if (index / ratio >= source.length) {
+				return null;
+			}
 		}
+
 
 		function loopIndex(i: number): number {
 			if (i < loopStartIndex) {
