@@ -10,11 +10,11 @@ export class Envelope {
 			this.stopTime = stopTime;
 		}
 
-		this.attackEndTime = startTime + ADSRConverter.convertAttack(attackRate);
-		this.decayEndTime = this.attackEndTime + ADSRConverter.convertDecay(decayRate);
-		this.releaseRate = releaseRate;
-
 		this.sustainLevel = ADSRConverter.convertSustain(sustainLevel);
+
+		this.attackEndTime = startTime + ADSRConverter.convertAttack(attackRate);
+		this.decayEndTime = this.attackEndTime + ADSRConverter.convertDecay(decayRate, this.sustainLevel);
+		this.releaseRate = releaseRate;
 	}
 
 	private static readonly LN_1_OVER_2_92544 = Math.log(1 / (2 * 92544));
@@ -73,8 +73,8 @@ export class Envelope {
 				amplitudeAtStop = this.sustainLevel * stopT;
 			}
 
-			// TODO: Something is wrong about the release, but it sounds close enough if we divide by 4
-			const releaseTimeNeeded = ADSRConverter.convertRelease(this.releaseRate, amplitudeAtStop) / 4;
+			// TODO: Something is wrong about the release, but it sounds close enough if we divide by 2
+			const releaseTimeNeeded = ADSRConverter.convertRelease(this.releaseRate, amplitudeAtStop) / 3;
 
 			if (time > this.stopTime + releaseTimeNeeded) {
 				this.isDone = true;

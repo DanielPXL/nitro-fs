@@ -96,7 +96,7 @@ export class Track {
 	
 	wait: number = 0;
 	callReturnStack: number[] = [];
-	pitchBendRange: number = 0;
+	pitchBendRange: number = 2;
 	pitchBend: number = 0;
 
 	tick() {
@@ -177,7 +177,7 @@ export class Track {
 	}
 
 	private Volume(cmd: Commands.Volume) {
-		this.synth.channels[this.track].volume1 = cmd.volume / 127;
+		this.synth.channels[this.track].volume1 = (cmd.volume / 127) * (cmd.volume / 127);
 	}
 
 	private MainVolume(cmd: Commands.MainVolume) {}
@@ -222,7 +222,7 @@ export class Track {
 	private LoopStart(cmd: Commands.LoopStart) {}
 
 	private Volume2(cmd: Commands.Volume2) {
-		this.synth.channels[this.track].volume2 = cmd.volume / 127;
+		this.synth.channels[this.track].volume2 = (cmd.volume / 127) * (cmd.volume / 127);
 	}
 
 	private PrintVariable(cmd: Commands.PrintVariable) {}

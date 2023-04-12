@@ -7,7 +7,7 @@ export class PSGPlayingNote implements PlayingNote {
 		this.note = note;
 		this.envelope = envelope;
 		this.dutyCycle = dutyCycle;
-		this.velocity = velocity / 127;
+		this.velocity = (velocity / 127) * (velocity / 127);
 		this.doneCallback = doneCallback;
 	}
 

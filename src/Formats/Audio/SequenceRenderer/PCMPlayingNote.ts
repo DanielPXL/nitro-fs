@@ -11,7 +11,7 @@ export class PCMPlayingNote implements PlayingNote {
 		this.swav = swav;
 		this.baseNote = baseNote;
 		this.sampleRate = sampleRate;
-		this.velocity = velocity / 127;
+		this.velocity = (velocity / 127) * (velocity / 127);
 		this.doneCallback = doneCallback;
 
 		this.sample = swav.toPCM();
