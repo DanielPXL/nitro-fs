@@ -17,9 +17,7 @@ If you need help with something, feel free to ask me on Discord (DanielPXL#9770)
 - BTX (3D Model Texture)
 
 ## Installation
-```bash
-npm install nitro-fs
-```
+There is no npm package yet. You can build the library yourself by cloning the repository and running `npm run build`. The output will be in the `dist` folder.
 
 ## Usage
 ### Initializing NitroFS
