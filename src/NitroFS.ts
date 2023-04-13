@@ -33,7 +33,7 @@ export class NitroFS {
 		return nitroFS;
 	}
 
-	private cartridgeHeader: CartridgeHeader;
+	cartridgeHeader: CartridgeHeader;
 	private fnt: NitroFNT;
 	private fileData: ArrayBuffer[];
 
