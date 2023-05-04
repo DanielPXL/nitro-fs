@@ -49,12 +49,12 @@ export {
 } from "./SBNK/Instrument";
 
 export { SequenceRenderer } from "./SequenceRenderer/SequenceRenderer";
-export { Track } from "./SequenceRenderer/Track";
+export { Track, TrackInfo } from "./SequenceRenderer/Track";
 export { Synthesizer } from "./SequenceRenderer/Synthesizer";
 export { SynthChannel } from "./SequenceRenderer/SynthChannel";
 export { PlayingNote } from "./SequenceRenderer/PlayingNote";
 export { PCMPlayingNote } from "./SequenceRenderer/PCMPlayingNote";
 export { PSGPlayingNote } from "./SequenceRenderer/PSGPlayingNote";
 export { Resampler } from "./SequenceRenderer/Resampler";
-export { Envelope } from "./SequenceRenderer/Envelope";
+export { Envelope, EnvelopeState } from "./SequenceRenderer/Envelope";
 export { ADSRConverter } from "./SequenceRenderer/ADSRConverter";

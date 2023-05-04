@@ -1,108 +1,52 @@
-export class ADSRConverter {
-	public static readonly TICK_INTERVAL = ((64 * 2728) / 33000000);
+import { KermalisVGMSUtils } from "./Kermalis.VGMST.Utils";
 
-	private static readonly ATTACKRATE_TO_TIME_TABLE = [
-		15.2209, 7.5955, 5.0537, 3.7828, 3.0203, 2.5119, 2.1488, 1.8764, 1.6646, 1.4951, 1.3564, 1.2409, 1.1431, 1.0593, 0.9866, 0.9231, 
-		0.867, 0.8171, 0.7725, 0.7323, 0.696, 0.663, 0.6328, 0.6052, 0.5797, 0.5562, 0.5345, 0.5143, 0.4955, 0.478, 0.4615, 0.4461, 
-		0.4317, 0.4181, 0.4052, 0.3931, 0.3816, 0.3708, 0.3604, 0.3506, 0.3413, 0.3324, 0.324, 0.3159, 0.3082, 0.3008, 0.2937, 0.2869, 
-		0.2804, 0.2742, 0.2681, 0.2624, 0.2568, 0.2515, 0.2463, 0.2413, 0.2365, 0.2319, 0.2274, 0.2231, 0.2189, 0.2148, 0.2109, 0.2071, 
-		0.2034, 0.1998, 0.1963, 0.193, 0.1897, 0.1865, 0.1834, 0.1804, 0.1775, 0.1746, 0.1718, 0.1691, 0.1665, 0.1639, 0.1614, 0.159, 
-		0.1566, 0.1543, 0.152, 0.1498, 0.1476, 0.1455, 0.1435, 0.1414, 0.1395, 0.1375, 0.1356, 0.1338, 0.132, 0.1302, 0.1285, 0.1268, 
-		0.1251, 0.1234, 0.1218, 0.1203, 0.1187, 0.1172, 0.1157, 0.1143, 0.1128, 0.1114, 0.1101, 0.1087, 0.1074, 0.1023, 0.0953, 0.0899, 
-		0.085, 0.0813, 0.0753, 0.0698, 0.0634, 0.0582, 0.0535, 0.0475, 0.0425, 0.0369, 0.0312, 0.026, 0.0205, 0.0151, 0.0107, 0.0052, 
+// https://web.archive.org/web/20201021055347/https://sites.google.com/site/kiwids/articulation.htm
+
+export class ADSRConverter {
+	private static readonly ATTACKRATE_TABLE = [
+		255, 254, 253, 252, 251, 250, 249, 248,
+		247, 246, 245, 244, 243, 242, 241, 240,
+		239, 238, 237, 236, 235, 234, 233, 232,
+		231, 230, 229, 228, 227, 226, 225, 224,
+		223, 222, 221, 220, 219, 218, 217, 216,
+		215, 214, 213, 212, 211, 210, 209, 208,
+		207, 206, 205, 204, 203, 202, 201, 200,
+		199, 198, 197, 196, 195, 194, 193, 192,
+		191, 190, 189, 188, 187, 186, 185, 184,
+		183, 182, 181, 180, 179, 178, 177, 176,
+		175, 174, 173, 172, 171, 170, 169, 168,
+		167, 166, 165, 164, 163, 162, 161, 160,
+		159, 158, 157, 156, 155, 154, 153, 152,
+		151, 150, 149, 148, 147, 143, 137, 132,
+		127, 123, 116, 109, 100, 92, 84, 73,
+		63, 51, 38, 26, 14, 5, 1, 0
 	]
 
 	public static convertAttack(attackRate: number): number {
-		return ADSRConverter.ATTACKRATE_TO_TIME_TABLE[attackRate];
+		return ADSRConverter.ATTACKRATE_TABLE[attackRate];
 	}
 
-	// private static readonly FALLRATE_TO_REAL_FALLRATE_TABLE = [
-	// 	1, 3, 5, 7, 9, 11, 13, 15,
-	// 	17, 19, 21, 23, 25, 27, 29, 31,
-	// 	33, 35, 37, 39, 41, 43, 45, 47,
-	// 	49, 51, 53, 55, 57, 59, 61, 63,
-	// 	65, 67, 69, 71, 73, 75, 77, 79,
-	// 	81, 83, 85, 87, 89, 91, 93, 95,
-	// 	97, 99, 101, 102, 104, 105, 107, 108,
-	// 	110, 111, 113, 115, 116, 118, 120, 122,
-	// 	124, 126, 128, 130, 132, 135, 137, 140,
-	// 	142, 145, 148, 151, 154, 157, 160, 163,
-	// 	167, 171, 175, 179, 183, 187, 192, 197,
-	// 	202, 208, 213, 219, 226, 233, 240, 248,
-	// 	256, 265, 274, 284, 295, 307, 320, 334,
-	// 	349, 366, 384, 404, 427, 452, 480, 512,
-	// 	549, 591, 640, 698, 768, 853, 960, 1097,
-	// 	1280, 1536, 1920, 2560, 3840, 7680, 15360, 65535
-	// ]
+	private static readonly FALLRATE_TABLE = [
+		1, 3, 5, 7, 9, 11, 13, 15,
+		17, 19, 21, 23, 25, 27, 29, 31,
+		33, 35, 37, 39, 41, 43, 45, 47,
+		49, 51, 53, 55, 57, 59, 61, 63,
+		65, 67, 69, 71, 73, 75, 77, 79,
+		81, 83, 85, 87, 89, 91, 93, 95,
+		97, 99, 101, 102, 104, 105, 107, 108,
+		110, 111, 113, 115, 116, 118, 120, 122,
+		124, 126, 128, 130, 132, 135, 137, 140,
+		142, 145, 148, 151, 154, 157, 160, 163,
+		167, 171, 175, 179, 183, 187, 192, 197,
+		202, 208, 213, 219, 226, 233, 240, 248,
+		256, 265, 274, 284, 295, 307, 320, 334,
+		349, 366, 384, 404, 427, 452, 480, 512,
+		549, 591, 640, 698, 768, 853, 960, 1097,
+		1280, 1536, 1920, 2560, 3840, 7680, 15360, 65535
+	]
 
-	// The convertDecay, convertRelease and getFallingRate functions come pretty much directly from VGMTrans' implementation
-	// https://github.com/vgmtrans/vgmtrans/blob/aeea0825547963f2af847695829fc4e894b3a88e/src/main/formats/NDSInstrSet.cpp#L193
-	// convertDecay and convertRelease are modified versions of NDSInstr::GetArticData to make the implementation more friendly to this project
-	// getFallingRate is a direct copy of NDSInstr::GetFallingRate
-
-	/* VGMTrans is licensed under the zlib/libpng license:
-
-			The zlib/libpng License
-
-		VGMTrans Copyright (c) 2002-2023 The VGMTrans Team
-
-		This software is provided 'as-is', without any express or implied
-		warranty. In no event will the authors be held liable for any damages
-		arising from the use of this software.
-
-		Permission is granted to anyone to use this software for any purpose,
-		including commercial applications, and to alter it and redistribute it
-		freely, subject to the following restrictions:
-
-			1. The origin of this software must not be misrepresented; you must not
-			claim that you wrote the original software. If you use this software
-			in a product, an acknowledgment in the product documentation would be
-			appreciated but is not required.
-
-			2. Altered source versions must be plainly marked as such, and must not be
-			misrepresented as being the original software.
-
-			3. This notice may not be removed or altered from any source
-			distribution.
-			
-	*/
-
-	public static convertDecay(fallRate: number, sustainAmplitude: number): number {
-		// return ADSRConverter.TICK_INTERVAL * (sustainAmplitude / -ADSRConverter.FALLRATE_TO_REAL_FALLRATE_TABLE[fallRate]);
-		let realDecay = this.getFallingRate(fallRate);
-		if (fallRate === 0x7F) {
-			return ADSRConverter.TICK_INTERVAL * 1;
-		} else {
-			const count = -sustainAmplitude / realDecay;
-			return ADSRConverter.TICK_INTERVAL * count;
-		}
-	}
-
-	public static convertRelease(fallRate: number, amplitudeAtStop: number): number {
-		// return ADSRConverter.TICK_INTERVAL * ((92544 + amplitudeAtStop) / ADSRConverter.FALLRATE_TO_REAL_FALLRATE_TABLE[fallRate]);
-		const count = (92544 + amplitudeAtStop) / this.getFallingRate(fallRate);
-		return ADSRConverter.TICK_INTERVAL * count;
-	}
-
-	private static getFallingRate(time: number) {
-		let realDecay;
-		if (time == 0x7F)
-			realDecay = 0xFFFF;
-		else if (time == 0x7E)
-			realDecay = 0x3C00;
-		else if (time < 0x32) {
-			realDecay = time * 2;
-			realDecay++;
-			realDecay &= 0xFFFF;
-		} else {
-			realDecay = 0x1E00;
-			time = 0x7E - time;
-			realDecay /= time;
-	
-			realDecay &= 0xFFFF;
-		}
-
-		return realDecay;
+	public static convertFall(fallRate: number): number {
+		return ADSRConverter.FALLRATE_TABLE[fallRate];
 	}
 
 	private static readonly SUSTAIN_TABLE = [
@@ -126,5 +70,9 @@ export class ADSRConverter {
 
 	public static convertSustain(sustain: number): number {
 		return ADSRConverter.SUSTAIN_TABLE[sustain];
+	}
+	
+	public static convertVolume(volume: number): number {
+		return KermalisVGMSUtils.GetChannelVolume(volume);
 	}
 }

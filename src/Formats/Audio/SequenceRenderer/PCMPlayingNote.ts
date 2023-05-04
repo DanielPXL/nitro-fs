@@ -3,15 +3,18 @@ import { Note, noteToFrequency } from "../SSEQ/Note";
 import { Envelope } from "./Envelope";
 import { Resampler } from "./Resampler";
 import { PlayingNote } from "./PlayingNote";
+import { ADSRConverter } from "./ADSRConverter";
+import { TrackInfo } from "./Track";
 
 export class PCMPlayingNote implements PlayingNote {
-	constructor(note: Note, envelope: Envelope, swav: SWAV, baseNote: Note, sampleRate: number, velocity: number, doneCallback: () => void) {
+	constructor(note: Note, envelope: Envelope, swav: SWAV, baseNote: Note, sampleRate: number, velocity: number, trackInfo: TrackInfo, doneCallback: () => void) {
 		this.note = note;
 		this.envelope = envelope;
 		this.swav = swav;
 		this.baseNote = baseNote;
 		this.sampleRate = sampleRate;
-		this.velocity = (velocity / 127) * (velocity / 127);
+		this.velocity = ADSRConverter.convertSustain(velocity);
+		this.trackInfo = trackInfo;
 		this.doneCallback = doneCallback;
 
 		this.sample = swav.toPCM();
@@ -23,7 +26,7 @@ export class PCMPlayingNote implements PlayingNote {
 	baseNote: Note;
 	sampleRate: number;
 	velocity: number;
-	pitchBendValue = 0;
+	trackInfo: TrackInfo;
 	doneCallback: () => void;
 	
 	sample: Float32Array;
@@ -34,7 +37,7 @@ export class PCMPlayingNote implements PlayingNote {
 	}
 
 	getValue(time: number) {
-		const ratio = noteToFrequency(this.note + this.pitchBendValue) / noteToFrequency(this.baseNote);
+		const ratio = noteToFrequency(this.note + this.trackInfo.pitchBendSemitones) / noteToFrequency(this.baseNote);
 
 		const sample = Resampler.singleSample(
 			this.sample,
@@ -53,17 +56,27 @@ export class PCMPlayingNote implements PlayingNote {
 			return 0;
 		}
 
-		return this.velocity * this.envelope.getGain(time) * sample;
+		const volume = this.velocity
+			+ this.envelope.getGain()
+			+ ADSRConverter.convertSustain(this.trackInfo.volume1)
+			+ ADSRConverter.convertSustain(this.trackInfo.volume2);
+		
+		return (ADSRConverter.convertVolume(volume) / 127) * sample;
 	}
 
 	pitchBend(semitones: number) {
-		const freqBefore = noteToFrequency(this.note + this.pitchBendValue);
+		const freqBefore = noteToFrequency(this.note + this.trackInfo.pitchBendSemitones);
 
-		this.pitchBendValue = semitones;
+		this.trackInfo.pitchBendSemitones = semitones;
 
-		const freqAfter = noteToFrequency(this.note + this.pitchBendValue);
+		const freqAfter = noteToFrequency(this.note + this.trackInfo.pitchBendSemitones);
 		const ratio = freqAfter / freqBefore;
 
 		this.sampleIndex = this.sampleIndex / ratio;
+	}
+
+	setVolume(volume1: number, volume2: number) {
+		this.trackInfo.volume1 = volume1;
+		this.trackInfo.volume2 = volume2;
 	}
 }

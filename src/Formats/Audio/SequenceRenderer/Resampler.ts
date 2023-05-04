@@ -1,7 +1,7 @@
 import { SWAV } from "../SWAV/SWAV";
 
 export class Resampler {
-	private static readonly SINC_WINDOW = 5;
+	private static readonly SINC_WINDOW = 3;
 
 	static singleSample(source: Float32Array, sourceRate: number, targetRate: number, index: number, loopStartIndex?: number, loopLength?: number) {
 		const ratio = targetRate / sourceRate;

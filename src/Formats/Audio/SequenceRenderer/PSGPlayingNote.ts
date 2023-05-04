@@ -1,13 +1,16 @@
 import { Note, noteToFrequency } from "../SSEQ/Note";
+import { ADSRConverter } from "./ADSRConverter";
 import { Envelope } from "./Envelope";
 import { PlayingNote } from "./PlayingNote";
+import { TrackInfo } from "./Track";
 
 export class PSGPlayingNote implements PlayingNote {
-	constructor(note: Note, envelope: Envelope, dutyCycle: number, velocity: number, doneCallback: () => void) {
+	constructor(note: Note, envelope: Envelope, dutyCycle: number, velocity: number, trackInfo: TrackInfo, doneCallback: () => void) {
 		this.note = note;
 		this.envelope = envelope;
 		this.dutyCycle = dutyCycle;
-		this.velocity = (velocity / 127) * (velocity / 127);
+		this.velocity = ADSRConverter.convertSustain(velocity);
+		this.trackInfo = trackInfo;
 		this.doneCallback = doneCallback;
 	}
 
@@ -15,12 +18,14 @@ export class PSGPlayingNote implements PlayingNote {
 	envelope: Envelope;
 	dutyCycle: number;
 	velocity: number;
+	trackInfo: TrackInfo;
 
+	doneCallback: () => void;
+	
 	// As far as I can tell, pitch bend is not supported by PSG notes
 	// It needs to be here to satisfy the PlayingNote interface though
 	pitchBend(semitones: number) { }
 
-	doneCallback: () => void;
 
 	getValue(time: number): number {
 		// Probably not the best way to do this, but it works
@@ -50,7 +55,12 @@ export class PSGPlayingNote implements PlayingNote {
 
 		const t = f * (time - this.envelope.startTime);
 
-		return this.velocity * this.envelope.getGain(time) * (2 * psgWave(t) - 1);
+		const volume = this.velocity
+			+ this.envelope.getGain()
+			+ ADSRConverter.convertSustain(this.trackInfo.volume1)
+			+ ADSRConverter.convertSustain(this.trackInfo.volume2);
+		
+		return (ADSRConverter.convertVolume(volume) / 127) * (psgWave(t) - 1) * 2;
 	}
 
 	dutyCycleToThreshold(dutyCycle: number): number {
@@ -74,5 +84,10 @@ export class PSGPlayingNote implements PlayingNote {
 
 	release(time: number) {
 		this.envelope.release(time);
+	}
+
+	setVolume(volume1: number, volume2: number) {
+		this.trackInfo.volume1 = volume1;
+		this.trackInfo.volume2 = volume2;
 	}
 }

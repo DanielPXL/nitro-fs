@@ -8,6 +8,7 @@ import { Envelope } from "./Envelope";
 import { PCMPlayingNote } from "./PCMPlayingNote";
 import { PSGPlayingNote } from "./PSGPlayingNote";
 import { PlayingNote } from "./PlayingNote";
+import { TrackInfo } from "./Track";
 
 export class SynthChannel {
 	constructor(sampleRate: number, bank: SBNK, swars: SWAR[]) {
@@ -23,8 +24,6 @@ export class SynthChannel {
 	
 	programNumber = 0;
 
-	volume1 = 1;
-	volume2 = 1;
 	pan = 0;
 	playing: PlayingNote[] = [];
 
@@ -39,12 +38,12 @@ export class SynthChannel {
 		const leftWeight = Math.min(1, Math.max(0, 1 - this.pan));
 		const rightWeight = Math.min(1, Math.max(0, 1 + this.pan));
 
-		const left = sum * leftWeight * this.volume1 * this.volume2;
-		const right = sum * rightWeight * this.volume1 * this.volume2;
+		const left = sum * leftWeight;
+		const right = sum * rightWeight;
 		return [left, right];
 	}
 	
-	playNote(time: number, note: Note, velocity: number, stopTime?: number) {
+	playNote(time: number, note: Note, velocity: number, stopTime?: number, trackInfo?: TrackInfo) {
 		const { noteInfo, isPSG } = this.getNoteInfo(note);
 		if (noteInfo === null || noteInfo === undefined) {
 			console.log("Note or instrument not found in bank.");
@@ -56,7 +55,7 @@ export class SynthChannel {
 			const envelope = new Envelope(time, noteInfo.attack, noteInfo.decay, noteInfo.sustain, noteInfo.release, stopTime);
 
 			const index = this.findFirstEmpty();
-			this.playing[index] = new PSGPlayingNote(note, envelope, dutyCycle, velocity, () => {
+			this.playing[index] = new PSGPlayingNote(note, envelope, dutyCycle, velocity, trackInfo, () => {
 				this.playing[index] = null;
 			});
 		} else {
@@ -66,7 +65,7 @@ export class SynthChannel {
 			const envelope = new Envelope(time, noteInfo.attack, noteInfo.decay, noteInfo.sustain, noteInfo.release, stopTime);
 	
 			const index = this.findFirstEmpty();
-			this.playing[index] = new PCMPlayingNote(note, envelope, swav, noteInfo.baseNote, this.sampleRate, velocity, () => {
+			this.playing[index] = new PCMPlayingNote(note, envelope, swav, noteInfo.baseNote, this.sampleRate, velocity, trackInfo, () => {
 				this.playing[index] = null;
 			});
 		}
@@ -131,6 +130,14 @@ export class SynthChannel {
 		}
 	}
 
+	envelopeTick(time: number) {
+		for (let i = 0; i < this.playing.length; i++) {
+			if (this.playing[i]) {
+				this.playing[i].envelope.tick(time);
+			}
+		}
+	}
+
 	releaseNote(time: number) {
 		for (let i = 0; i < this.playing.length; i++) {
 			if (this.playing[i]) {
@@ -147,6 +154,14 @@ export class SynthChannel {
 		for (let i = 0; i < this.playing.length; i++) {
 			if (this.playing[i]) {
 				this.playing[i].pitchBend(semitones);
+			}
+		}
+	}
+
+	setVolume(volume1: number, volume2: number) {
+		for (let i = 0; i < this.playing.length; i++) {
+			if (this.playing[i]) {
+				this.playing[i].setVolume(volume1, volume2);
 			}
 		}
 	}

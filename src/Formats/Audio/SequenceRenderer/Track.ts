@@ -98,6 +98,8 @@ export class Track {
 	callReturnStack: number[] = [];
 	pitchBendRange: number = 2;
 	pitchBend: number = 0;
+	volume1: number = 127;
+	volume2: number = 127;
 
 	tick() {
 		while (this.wait === 0) {
@@ -125,7 +127,13 @@ export class Track {
 	private Note(cmd: Commands.Note) {
 		if (!this.active) return;
 
-		this.synth.playNote(this.track, cmd.note, cmd.velocity, cmd.duration);
+		const trackInfo: TrackInfo = {
+			pitchBendSemitones: this.pitchBendRange * this.pitchBend,
+			volume1: this.volume1,
+			volume2: this.volume2
+		}
+
+		this.synth.playNote(this.track, cmd.note, cmd.velocity, cmd.duration, trackInfo);
 	}
 
 	private Wait(cmd: Commands.Wait) {
@@ -177,7 +185,8 @@ export class Track {
 	}
 
 	private Volume(cmd: Commands.Volume) {
-		this.synth.channels[this.track].volume1 = (cmd.volume / 127) * (cmd.volume / 127);
+		this.volume1 = cmd.volume;
+		this.synth.channels[this.track].setVolume(this.volume1, this.volume2);
 	}
 
 	private MainVolume(cmd: Commands.MainVolume) {}
@@ -222,7 +231,8 @@ export class Track {
 	private LoopStart(cmd: Commands.LoopStart) {}
 
 	private Volume2(cmd: Commands.Volume2) {
-		this.synth.channels[this.track].volume2 = (cmd.volume / 127) * (cmd.volume / 127);
+		this.volume2 = cmd.volume;
+		this.synth.channels[this.track].setVolume(this.volume1, this.volume2);
 	}
 
 	private PrintVariable(cmd: Commands.PrintVariable) {}
@@ -244,4 +254,10 @@ export class Track {
 	private Fin(cmd: Commands.Fin) {
 		this.stopTrackCallback(this.track);
 	}
+}
+
+export interface TrackInfo {
+	pitchBendSemitones: number;
+	volume1: number;
+	volume2: number;
 }
