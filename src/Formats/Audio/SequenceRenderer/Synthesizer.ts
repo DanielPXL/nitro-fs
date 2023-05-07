@@ -63,8 +63,9 @@ export class Synthesizer {
 			for (let j = 0; j < this.channels.length; j++) {
 				const samples = this.channels[j].getValue(this.time);
 				for (let k = 0; k < samples.length; k++) {
-					// TODO: This can cause clipping if converting to non float
-					sample[k] += samples[k];
+					// TODO?: This can cause clipping in non-float formats, but I don't really see a way to fix it
+					// If we divide by 16 instead of 8, it's too quiet, and if we don't divide at all, it clips a lot
+					sample[k] += samples[k] / 8;
 				}
 			}
 

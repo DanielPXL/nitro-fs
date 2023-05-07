@@ -30,13 +30,15 @@ export class SequenceRenderer {
 
 		this.synth = new Synthesizer(sbnk, swar, sampleRate, this.tempo, sink, bufferLength);
 		
-		this.samplesPerTick = SequenceRenderer.TICK_INTERVAL / 1000 * sampleRate;
+		// this.samplesPerTick = SequenceRenderer.TICK_INTERVAL * sampleRate;
+		// Do this to avoid floating point rounding errors
+		this.samplesPerTick = ((64 * 2728) * sampleRate) / 33513982;
 
 		this.tracks = [];
 		this.openTrack(0, 0);
 	}
 
-	public static readonly TICK_INTERVAL = ((64 * 2728) / 33000);
+	public static readonly TICK_INTERVAL_MS = ((64 * 2728) * 1000 / 33513982);
 
 	sseq: SSEQ;
 	sdat: SDAT;

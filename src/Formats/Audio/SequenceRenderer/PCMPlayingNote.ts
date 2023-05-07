@@ -48,7 +48,6 @@ export class PCMPlayingNote implements PlayingNote {
 			this.swav.dataBlock.loop ? this.swav.dataBlock.loopLength : undefined
 		);
 
-		// I hate this, I don't want to keep state in here, but this is the easiest way to implement pitch bend
 		this.sampleIndex += 1;
 
 		if (sample === null || this.envelope.isDone) {
