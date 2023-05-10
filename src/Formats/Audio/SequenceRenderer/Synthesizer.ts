@@ -57,6 +57,10 @@ export class Synthesizer {
 			this.sampleRemainder -= Math.floor(this.sampleRemainder);
 		}
 
+		for (let i = 0; i < this.channels.length; i++) {
+			this.channels[i].envelopeTick(this.time);
+		}
+
 		for (let i = 0; i < numSamples; i++) {
 			let sample: number[] = new Array(2).fill(0);
 
@@ -83,10 +87,6 @@ export class Synthesizer {
 		}
 
 		this.sampleRemainder += numSamples - Math.floor(numSamples);
-
-		for (let i = 0; i < this.channels.length; i++) {
-			this.channels[i].envelopeTick(this.time);
-		}
 	}
 
 	playNote(track: number, note: Note, velocity = 127, duration?: number, trackInfo?: TrackInfo) {
