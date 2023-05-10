@@ -21,11 +21,6 @@ export class PSGPlayingNote implements PlayingNote {
 	trackInfo: TrackInfo;
 
 	doneCallback: () => void;
-	
-	// As far as I can tell, pitch bend is not supported by PSG notes
-	// It needs to be here to satisfy the PlayingNote interface though
-	pitchBend(semitones: number) { }
-
 
 	getValue(time: number): number {
 		// Probably not the best way to do this, but it works
@@ -46,7 +41,7 @@ export class PSGPlayingNote implements PlayingNote {
 		}
 
 		const dutyCycle = this.dutyCycleToThreshold(this.dutyCycle);
-		const f = noteToFrequency(this.note);
+		const f = noteToFrequency(this.note + this.trackInfo.pitchBendSemitones);
 
 		function psgWave(x: number) {
 			// return triangleWave(x) < dutyCycle ? 1 : -1;
@@ -84,6 +79,11 @@ export class PSGPlayingNote implements PlayingNote {
 
 	release(time: number) {
 		this.envelope.release(time);
+	}
+
+	pitchBend(semitones: number) {
+		// PSG waves don't need special handling for pitch bends since they are made out of square waves
+		this.trackInfo.pitchBendSemitones = semitones;
 	}
 
 	setVolume(volume1: number, volume2: number) {

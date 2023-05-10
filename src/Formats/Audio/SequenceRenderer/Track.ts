@@ -253,6 +253,9 @@ export class Track {
 
 	private Fin(cmd: Commands.Fin) {
 		this.stopTrackCallback(this.track);
+
+		// Hacky way to stop the tick while loop
+		this.wait = -1;
 	}
 }
 
