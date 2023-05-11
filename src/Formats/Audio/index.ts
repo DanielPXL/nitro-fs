@@ -55,6 +55,7 @@ export { SynthChannel } from "./SequenceRenderer/SynthChannel";
 export { PlayingNote } from "./SequenceRenderer/PlayingNote";
 export { PCMPlayingNote } from "./SequenceRenderer/PCMPlayingNote";
 export { PSGPlayingNote } from "./SequenceRenderer/PSGPlayingNote";
+export { WhiteNoisePlayingNote } from "./SequenceRenderer/WhiteNoisePlayingNote";
 export { Resampler } from "./SequenceRenderer/Resampler";
 export { Envelope, EnvelopeState } from "./SequenceRenderer/Envelope";
 export { ADSRConverter } from "./SequenceRenderer/ADSRConverter";
