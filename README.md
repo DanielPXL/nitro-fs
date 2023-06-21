@@ -5,7 +5,7 @@ nitro-fs is a work-in-progress TypeScript library for reading files on the Ninte
 
 Note that this library is still in development and things may change. If you find any bugs or have any suggestions, feel free to open an issue or pull request.
 
-If you need help with something, feel free to ask me on Discord (DanielPXL#9770).
+If you need help with something, feel free to ask me on Discord (danielpxl).
 
 ## Supported Formats
 - SDAT (Sound Data)
@@ -117,7 +117,6 @@ while (!done) {
 ## Known Issues
 - The SSEQ command parser parses the "programming" commands (like variable, random, if, etc.) incorrectly. Not many games use these commands though, so far I have only found them in The Legend of Zelda: Spirit Tracks.
 - The SequenceRenderer only supports a small subset of the available commands (see [here](src/Formats/Audio/SequenceRenderer/Track.ts) for more info). The most important ones are supported though, and many games already work fine.
-- Something is wrong with envelopes (decay and release phase is not really accurate, I think the other phases are fine though?).
 
 ## Thanks to:
 - [Martin Korth's gbatek](https://problemkaputt.de/gbatek.htm) - documentation on everything related to the DS
