@@ -2,6 +2,7 @@ import { DirectInstrument, DrumSetInstrument, InstrumentType, KeySplitInstrument
 import { NoteInfo } from "../SBNK/NoteInfo";
 import { SBNK } from "../SBNK/SBNK";
 import { BankInfo } from "../SDAT/FileInfo";
+import { ModType } from "../SSEQ/Command";
 import { Note } from "../SSEQ/Note";
 import { SWAR } from "../SWAR/SWAR";
 import { Envelope } from "./Envelope";
@@ -142,6 +143,7 @@ export class SynthChannel {
 		for (let i = 0; i < this.playing.length; i++) {
 			if (this.playing[i]) {
 				this.playing[i].envelope.tick(time);
+				this.playing[i].modulationTick(time);
 			}
 		}
 	}
@@ -170,6 +172,14 @@ export class SynthChannel {
 		for (let i = 0; i < this.playing.length; i++) {
 			if (this.playing[i]) {
 				this.playing[i].setVolume(volume1, volume2);
+			}
+		}
+	}
+
+	setModulation(modDepth: number, modRange: number, modSpeed: number, modDelay: number, modType: ModType) {
+		for (let i = 0; i < this.playing.length; i++) {
+			if (this.playing[i]) {
+				this.playing[i].setModulation(modDepth, modRange, modSpeed, modDelay, modType);
 			}
 		}
 	}

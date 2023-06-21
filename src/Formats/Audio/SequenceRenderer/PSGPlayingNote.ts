@@ -1,3 +1,4 @@
+import { ModType } from "../SSEQ/Command";
 import { Note, noteToFrequency } from "../SSEQ/Note";
 import { ADSRConverter } from "./ADSRConverter";
 import { Envelope } from "./Envelope";
@@ -89,5 +90,17 @@ export class PSGPlayingNote implements PlayingNote {
 	setVolume(volume1: number, volume2: number) {
 		this.trackInfo.volume1 = volume1;
 		this.trackInfo.volume2 = volume2;
+	}
+
+	setModulation(modDepth: number, modRange: number, modSpeed: number, modDelay: number, modType: ModType) {
+		this.trackInfo.modDepth = modDepth;
+		this.trackInfo.modRange = modRange;
+		this.trackInfo.modSpeed = modSpeed;
+		this.trackInfo.modDelay = modDelay;
+		this.trackInfo.modType = modType;
+	}
+
+	modulationTick(time: number): void {
+		// TODO: Look into this
 	}
 }

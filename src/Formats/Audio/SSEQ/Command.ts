@@ -1,6 +1,12 @@
 import { CommandType } from "./CommandType";
 import { Note as NoteE } from "./Note";
 
+export enum ModType {
+	Pitch = 0,
+	Volume = 1,
+	Pan = 2
+}
+
 export abstract class Command {
 	abstract type: CommandType;
 	abstract length: number;
@@ -349,7 +355,7 @@ export namespace Commands {
 
 	// 0xCC (Modulation Type)
 	export class ModulationType extends Command {
-		constructor(public modType: number) {
+		constructor(public modType: ModType) {
 			super();
 		}
 

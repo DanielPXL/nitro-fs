@@ -136,9 +136,11 @@ for (let i = 0; i < 128; i++) {
 }
 
 export function noteToFrequency(note: Note) {
-	if (noteToFrequencies[note]) {
+	const noteMod1 = note % 1;
+	if (noteMod1 === 0) {
 		return noteToFrequencies[note];
 	}
 
-	return 440 * Math.pow(2, (note - 69) / 12);
+	const lower = note - noteMod1;
+	return noteToFrequencies[lower] * (1 - noteMod1) + noteToFrequencies[lower + 1] * noteMod1;
 }

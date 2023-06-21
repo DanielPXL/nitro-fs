@@ -21,7 +21,7 @@ export {
 } from "./SDAT/FileInfo";
 
 export { SSEQ, SSEQDataBlock } from "./SSEQ/SSEQ";
-export { Command, OffsetCommand, Commands } from "./SSEQ/Command";
+export { Command, OffsetCommand, Commands, ModType } from "./SSEQ/Command";
 export { CommandType, commandTypeToString } from "./SSEQ/CommandType";
 export { CommandParser } from "./SSEQ/CommandParser";
 export { Note, noteToFrequency } from "./SSEQ/Note";

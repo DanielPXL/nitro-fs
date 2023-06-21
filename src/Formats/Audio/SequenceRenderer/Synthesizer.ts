@@ -62,7 +62,7 @@ export class Synthesizer {
 		}
 
 		for (let i = 0; i < numSamples; i++) {
-			let sample: number[] = new Array(2).fill(0);
+			let sample: number[] = [0, 0];
 
 			for (let j = 0; j < this.channels.length; j++) {
 				const samples = this.channels[j].getValue(this.time);

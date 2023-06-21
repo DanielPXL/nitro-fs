@@ -1,7 +1,7 @@
 import { CommandType, commandTypeToString } from "../SSEQ/CommandType";
 import { SDAT } from "../SDAT/SDAT";
 import { SSEQ } from "../SSEQ/SSEQ";
-import { Commands } from "../SSEQ/Command";
+import { Commands, ModType } from "../SSEQ/Command";
 import { SequenceInfo } from "../SDAT/FileInfo";
 import { SBNK } from "../SBNK/SBNK";
 import { SWAR } from "../SWAR/SWAR";
@@ -100,6 +100,11 @@ export class Track {
 	pitchBend: number = 0;
 	volume1: number = 127;
 	volume2: number = 127;
+	modulationDepth: number = 0;
+	modulationRange: number = 1;
+	modulationSpeed: number = 16;
+	modulationDelay: number = 0;
+	modulationType: ModType = ModType.Pitch;
 
 	tick() {
 		while (this.wait === 0) {
@@ -130,7 +135,12 @@ export class Track {
 		const trackInfo: TrackInfo = {
 			pitchBendSemitones: this.pitchBendRange * this.pitchBend,
 			volume1: this.volume1,
-			volume2: this.volume2
+			volume2: this.volume2,
+			modDepth: this.modulationDepth,
+			modRange: this.modulationRange,
+			modSpeed: this.modulationSpeed,
+			modDelay: this.modulationDelay,
+			modType: this.modulationType
 		}
 
 		this.synth.playNote(this.track, cmd.note, cmd.velocity, cmd.duration, trackInfo);
@@ -218,10 +228,27 @@ export class Track {
 	private NoteWaitMode(cmd: Commands.NoteWaitMode) {}
 	private Tie(cmd: Commands.Tie) {}
 	private PortamentoControl(cmd: Commands.Portamento) {}
-	private ModulationDepth(cmd: Commands.ModulationDepth) {}
-	private ModulationSpeed(cmd: Commands.ModulationSpeed) {}
-	private ModulationType(cmd: Commands.ModulationType) {}
-	private ModulationRange(cmd: Commands.ModulationRange) {}
+
+	private ModulationDepth(cmd: Commands.ModulationDepth) {
+		this.modulationDepth = cmd.depth;
+		this.synth.channels[this.track].setModulation(this.modulationDepth, this.modulationRange, this.modulationSpeed, this.modulationDelay, this.modulationType);
+	}
+
+	private ModulationSpeed(cmd: Commands.ModulationSpeed) {
+		this.modulationSpeed = cmd.speed;
+		this.synth.channels[this.track].setModulation(this.modulationDepth, this.modulationRange, this.modulationSpeed, this.modulationDelay, this.modulationType);
+	}
+
+	private ModulationType(cmd: Commands.ModulationType) {
+		this.modulationType = cmd.modType;
+		this.synth.channels[this.track].setModulation(this.modulationDepth, this.modulationRange, this.modulationSpeed, this.modulationDelay, this.modulationType);
+	}
+
+	private ModulationRange(cmd: Commands.ModulationRange) {
+		this.modulationRange = cmd.range;
+		this.synth.channels[this.track].setModulation(this.modulationDepth, this.modulationRange, this.modulationSpeed, this.modulationDelay, this.modulationType);
+	}
+
 	private PortamentoSwitch(cmd: Commands.PortamentoSwitch) {}
 	private PortamentoTime(cmd: Commands.PortamentoTime) {}
 	private Attack(cmd: Commands.Attack) {}
@@ -236,7 +263,11 @@ export class Track {
 	}
 
 	private PrintVariable(cmd: Commands.PrintVariable) {}
-	private ModulationDelay(cmd: Commands.ModulationDelay) {}
+
+	private ModulationDelay(cmd: Commands.ModulationDelay) {
+		this.modulationDelay = cmd.delay;
+		this.synth.channels[this.track].setModulation(this.modulationDepth, this.modulationRange, this.modulationSpeed, this.modulationDelay, this.modulationType);
+	}
 
 	private Tempo(cmd: Commands.Tempo) {
 		this.changeTempoCallback(cmd.tempo);
@@ -263,4 +294,9 @@ export interface TrackInfo {
 	pitchBendSemitones: number;
 	volume1: number;
 	volume2: number;
+	modDepth: number;
+	modRange: number;
+	modSpeed: number;
+	modDelay: number;
+	modType: ModType;
 }

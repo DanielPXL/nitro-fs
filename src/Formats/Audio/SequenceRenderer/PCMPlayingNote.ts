@@ -5,6 +5,7 @@ import { Resampler } from "./Resampler";
 import { PlayingNote } from "./PlayingNote";
 import { ADSRConverter } from "./ADSRConverter";
 import { TrackInfo } from "./Track";
+import { ModType } from "../SSEQ/Command";
 
 export class PCMPlayingNote implements PlayingNote {
 	constructor(note: Note, envelope: Envelope, swav: SWAV, baseNote: Note, sampleRate: number, velocity: number, trackInfo: TrackInfo, doneCallback: () => void) {
@@ -31,13 +32,18 @@ export class PCMPlayingNote implements PlayingNote {
 	
 	sample: Float32Array;
 	sampleIndex = 0;
+	
+	modulationPitch = 0;
+	modulationVolume = 1;
+	modulationTickCount = 0;
+	modulationStartTime?: number;
 
 	release(time: number) {
 		this.envelope.release(time);
 	}
 
 	getValue(time: number) {
-		const ratio = noteToFrequency(this.note + this.trackInfo.pitchBendSemitones) / noteToFrequency(this.baseNote);
+		const ratio = noteToFrequency(this.note + this.trackInfo.pitchBendSemitones + this.modulationPitch) / noteToFrequency(this.baseNote);
 
 		const sample = Resampler.singleSample(
 			this.sample,
@@ -60,7 +66,8 @@ export class PCMPlayingNote implements PlayingNote {
 			+ ADSRConverter.convertSustain(this.trackInfo.volume1)
 			+ ADSRConverter.convertSustain(this.trackInfo.volume2);
 		
-		return (ADSRConverter.convertVolume(volume) / 127) * sample;
+		const actualVolume = (ADSRConverter.convertVolume(volume) / 127) * this.modulationVolume;
+		return Math.min(1, Math.max(0, actualVolume)) * sample;
 	}
 
 	pitchBend(semitones: number) {
@@ -77,5 +84,42 @@ export class PCMPlayingNote implements PlayingNote {
 	setVolume(volume1: number, volume2: number) {
 		this.trackInfo.volume1 = volume1;
 		this.trackInfo.volume2 = volume2;
+	}
+
+	setModulation(modDepth: number, modRange: number, modSpeed: number, modDelay: number, modType: ModType) {
+		this.trackInfo.modDepth = modDepth;
+		this.trackInfo.modRange = modRange;
+		this.trackInfo.modSpeed = modSpeed;
+		this.trackInfo.modDelay = modDelay;
+		this.trackInfo.modType = modType;
+	}
+
+	modulationTick(time: number) {
+		this.modulationTickCount++;
+		if (this.modulationTickCount < this.trackInfo.modDelay) {
+			return;
+		}
+
+		if (this.modulationStartTime === undefined) {
+			this.modulationStartTime = time;
+		}
+
+		if (this.trackInfo.modDepth > 0) {
+			const modulationAmplitude = (this.trackInfo.modDepth / 127) * this.trackInfo.modRange;
+			const modulationFreq = (this.trackInfo.modSpeed / 127) * 50;
+			
+			const modulationValue = modulationAmplitude * Math.sin(2 * Math.PI * modulationFreq * (time - this.modulationStartTime));
+			if (this.trackInfo.modType === ModType.Pitch) {
+	
+				const freqBeforeModulation = noteToFrequency(this.note + this.trackInfo.pitchBendSemitones + this.modulationPitch);
+				this.modulationPitch = modulationValue;
+				const freqAfterModulation = noteToFrequency(this.note + this.trackInfo.pitchBendSemitones + this.modulationPitch);
+				const ratio = freqAfterModulation / freqBeforeModulation;
+				this.sampleIndex = this.sampleIndex / ratio;
+			} else if (this.trackInfo.modType === ModType.Volume) {
+				// Modulation is given in decibels
+				this.modulationVolume = Math.pow(10, modulationValue / 10);
+			}
+		}
 	}
 }
