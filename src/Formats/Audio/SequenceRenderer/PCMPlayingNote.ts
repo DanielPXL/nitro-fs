@@ -100,26 +100,28 @@ export class PCMPlayingNote implements PlayingNote {
 			return;
 		}
 
+		if (this.trackInfo.modDepth === 0) {
+			return
+		}
+
 		if (this.modulationStartTime === undefined) {
 			this.modulationStartTime = time;
 		}
 
-		if (this.trackInfo.modDepth > 0) {
-			const modulationAmplitude = (this.trackInfo.modDepth / 127) * this.trackInfo.modRange;
-			const modulationFreq = (this.trackInfo.modSpeed / 127) * 50;
-			
-			const modulationValue = modulationAmplitude * Math.sin(2 * Math.PI * modulationFreq * (time - this.modulationStartTime));
-			if (this.trackInfo.modType === ModType.Pitch) {
-	
-				const freqBeforeModulation = noteToFrequency(this.note + this.trackInfo.pitchBendSemitones + this.modulationPitch);
-				this.modulationPitch = modulationValue;
-				const freqAfterModulation = noteToFrequency(this.note + this.trackInfo.pitchBendSemitones + this.modulationPitch);
-				const ratio = freqAfterModulation / freqBeforeModulation;
-				this.sampleIndex = this.sampleIndex / ratio;
-			} else if (this.trackInfo.modType === ModType.Volume) {
-				// Modulation is given in decibels
-				this.modulationVolume = Math.pow(10, modulationValue / 10);
-			}
+		const modulationAmplitude = (this.trackInfo.modDepth / 127) * this.trackInfo.modRange;
+		const modulationFreq = (this.trackInfo.modSpeed / 127) * 50;
+		
+		const modulationValue = modulationAmplitude * Math.sin(2 * Math.PI * modulationFreq * (time - this.modulationStartTime));
+		if (this.trackInfo.modType === ModType.Pitch) {
+
+			const freqBeforeModulation = noteToFrequency(this.note + this.trackInfo.pitchBendSemitones + this.modulationPitch);
+			this.modulationPitch = modulationValue;
+			const freqAfterModulation = noteToFrequency(this.note + this.trackInfo.pitchBendSemitones + this.modulationPitch);
+			const ratio = freqAfterModulation / freqBeforeModulation;
+			this.sampleIndex = this.sampleIndex / ratio;
+		} else if (this.trackInfo.modType === ModType.Volume) {
+			// Modulation is given in decibels
+			this.modulationVolume = Math.pow(10, modulationValue / 10);
 		}
 	}
 }
