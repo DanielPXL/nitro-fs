@@ -101,7 +101,7 @@ export class PCMPlayingNote implements PlayingNote {
 		}
 
 		if (this.trackInfo.modDepth === 0) {
-			return
+			return;
 		}
 
 		if (this.modulationStartTime === undefined) {
@@ -113,7 +113,6 @@ export class PCMPlayingNote implements PlayingNote {
 		
 		const modulationValue = modulationAmplitude * Math.sin(2 * Math.PI * modulationFreq * (time - this.modulationStartTime));
 		if (this.trackInfo.modType === ModType.Pitch) {
-
 			const freqBeforeModulation = noteToFrequency(this.note + this.trackInfo.pitchBendSemitones + this.modulationPitch);
 			this.modulationPitch = modulationValue;
 			const freqAfterModulation = noteToFrequency(this.note + this.trackInfo.pitchBendSemitones + this.modulationPitch);

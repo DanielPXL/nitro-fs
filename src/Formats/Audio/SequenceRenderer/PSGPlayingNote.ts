@@ -6,10 +6,11 @@ import { PlayingNote } from "./PlayingNote";
 import { TrackInfo } from "./Track";
 
 export class PSGPlayingNote implements PlayingNote {
-	constructor(note: Note, envelope: Envelope, dutyCycle: number, velocity: number, trackInfo: TrackInfo, doneCallback: () => void) {
+	constructor(note: Note, envelope: Envelope, dutyCycle: number, sampleRate: number, velocity: number, trackInfo: TrackInfo, doneCallback: () => void) {
 		this.note = note;
 		this.envelope = envelope;
 		this.dutyCycle = dutyCycle;
+		this.sampleRate = sampleRate;
 		this.velocity = ADSRConverter.convertSustain(velocity);
 		this.trackInfo = trackInfo;
 		this.doneCallback = doneCallback;
@@ -18,10 +19,18 @@ export class PSGPlayingNote implements PlayingNote {
 	note: Note;
 	envelope: Envelope;
 	dutyCycle: number;
+	sampleRate: number;
 	velocity: number;
 	trackInfo: TrackInfo;
 
 	doneCallback: () => void;
+
+	sampleIndex = 0;
+
+	modulationPitch = 0;
+	modulationVolume = 1;
+	modulationTickCount = 0;
+	modulationStartTime?: number;
 
 	getValue(time: number): number {
 		// Probably not the best way to do this, but it works
@@ -42,21 +51,23 @@ export class PSGPlayingNote implements PlayingNote {
 		}
 
 		const dutyCycle = this.dutyCycleToThreshold(this.dutyCycle);
-		const f = noteToFrequency(this.note + this.trackInfo.pitchBendSemitones);
+		const f = noteToFrequency(this.note + this.trackInfo.pitchBendSemitones + this.modulationPitch);
 
 		function psgWave(x: number) {
 			// return triangleWave(x) < dutyCycle ? 1 : -1;
 			return Math.ceil(dutyCycle - triangleWave(x + dutyCycle / 2));
 		}
 
-		const t = f * (time - this.envelope.startTime);
+		const t = f * (this.sampleIndex / this.sampleRate);
+		this.sampleIndex++;
 
 		const volume = this.velocity
 			+ this.envelope.getGain()
 			+ ADSRConverter.convertSustain(this.trackInfo.volume1)
 			+ ADSRConverter.convertSustain(this.trackInfo.volume2);
 		
-		return (ADSRConverter.convertVolume(volume) / 127) * (psgWave(t) - 1) * 2;
+		const actualVolume = (ADSRConverter.convertVolume(volume) / 127) * this.modulationVolume;
+		return Math.min(1, Math.max(0, actualVolume)) * (psgWave(t) - 0.5) * 2;
 	}
 
 	dutyCycleToThreshold(dutyCycle: number): number {
@@ -101,6 +112,32 @@ export class PSGPlayingNote implements PlayingNote {
 	}
 
 	modulationTick(time: number): void {
-		// TODO: Look into this
+		this.modulationTickCount++;
+		if (this.modulationTickCount < this.trackInfo.modDelay) {
+			return;
+		}
+
+		if (this.trackInfo.modDepth === 0) {
+			return;
+		}
+
+		if (this.modulationStartTime === undefined) {
+			this.modulationStartTime = time;
+		}
+
+		const modulationAmplitude = (this.trackInfo.modDepth / 127) * this.trackInfo.modRange;
+		const modulationFreq = (this.trackInfo.modSpeed / 127) * 50;
+		
+		const modulationValue = modulationAmplitude * Math.sin(2 * Math.PI * modulationFreq * (time - this.modulationStartTime));
+		if (this.trackInfo.modType === ModType.Pitch) {
+			const freqBeforeModulation = noteToFrequency(this.note + this.trackInfo.pitchBendSemitones + this.modulationPitch);
+			this.modulationPitch = modulationValue;
+			const freqAfterModulation = noteToFrequency(this.note + this.trackInfo.pitchBendSemitones + this.modulationPitch);
+			const ratio = freqAfterModulation / freqBeforeModulation;
+			this.sampleIndex = this.sampleIndex / ratio;
+		} else if (this.trackInfo.modType === ModType.Volume) {
+			// Modulation is given in decibels
+			this.modulationVolume = Math.pow(10, modulationValue / 10);
+		}
 	}
 }

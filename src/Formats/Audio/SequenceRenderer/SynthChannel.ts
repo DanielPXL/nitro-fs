@@ -57,7 +57,7 @@ export class SynthChannel {
 			const envelope = new Envelope(time, noteInfo.attack, noteInfo.decay, noteInfo.sustain, noteInfo.release, stopTime);
 
 			const index = this.findFirstEmpty();
-			this.playing[index] = new PSGPlayingNote(note, envelope, dutyCycle, velocity, trackInfo, () => {
+			this.playing[index] = new PSGPlayingNote(note, envelope, dutyCycle, this.sampleRate, velocity, trackInfo, () => {
 				this.playing[index] = null;
 			});
 		} else if (isWhiteNoise) {

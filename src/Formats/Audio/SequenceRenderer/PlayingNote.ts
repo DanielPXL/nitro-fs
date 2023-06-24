@@ -1,6 +1,10 @@
 import { ModType } from "../SSEQ/Command";
 import { Envelope } from "./Envelope";
 
+// TODO: This whole PlayingNote thing is a bit of a mess.
+// What would be much better if there was a single PlayingNote class that just uses
+// different sample generators depending on the instrument type.
+
 export abstract class PlayingNote {
 	abstract envelope: Envelope;
 	abstract getValue(time: number): number;
