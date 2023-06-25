@@ -9,10 +9,11 @@ import { SWAR } from "../SWAR/SWAR";
 import { SequenceInfo } from "../SDAT/FileInfo";
 
 export class SequenceRenderer {
-	constructor(sseq: SSEQ, sseqInfo: SequenceInfo, sdat: SDAT, sampleRate: number, sink: (buffer: Float32Array[]) => void, bufferLength = 1024 * 4) {
+	constructor(sseq: SSEQ, sseqInfo: SequenceInfo, sdat: SDAT, sampleRate: number, sink: (buffer: Float32Array[]) => void, bufferLength = 1024 * 4, activeTracks = 0xFFFF) {
 		this.sseq = sseq;
 		this.sdat = sdat;
 		this.sampleRate = sampleRate;
+		this.activeTracks = activeTracks;
 
 		const sbnkFile = sdat.fs.banks.find(b => b.id === sseqInfo.bankId);
 		const sbnk = new SBNK(sbnkFile.buffer);
@@ -47,6 +48,7 @@ export class SequenceRenderer {
 	samplesPerTick: number;
 	tracks: Track[];
 	tracksStarted: boolean = false;
+	activeTracks: number;
 
 	cycle: number = 0;
 	tempo: number = 120;
@@ -93,6 +95,12 @@ export class SequenceRenderer {
 			this.changeTempo.bind(this),
 			this.openTrack.bind(this)
 		);
+
+		if (1 << track & this.activeTracks) {
+			t.active = true;
+		} else {
+			t.active = false;
+		}
 
 		this.tracks[track] = t;	
 	}

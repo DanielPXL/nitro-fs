@@ -14,10 +14,22 @@ export class BufferReader {
 
 	public littleEndian: boolean;
 
+	/**
+	 * Creates a new BufferReader instance from the specified ArrayBuffer.
+	 * @param buffer - The ArrayBuffer to read from.
+	 * @param littleEndian - Whether the buffer is little endian.
+	 * @returns The BufferReader instance.
+	 */
 	static new(buffer: ArrayBuffer, littleEndian: boolean = true) {
 		return new BufferReader(buffer, 0, buffer.byteLength, littleEndian);
 	}
 
+	/**
+	 * Slices the buffer and returns a new BufferReader instance, without copying the underlying buffer.
+	 * @param start - The start offset.
+	 * @param end - The end offset.
+	 * @returns The new BufferReader instance.
+	 */
 	slice(start: number, end?: number) {
 		if (end === undefined || end > this.bufferLength) {
 			end = this.bufferLength;
@@ -99,6 +111,12 @@ export class BufferReader {
 		return result;
 	}
 
+	/**
+	 * Reads a variable-length integer from the buffer. Variable-length integers are encoded in groups of 7 bits,
+	 * with the 8th bit indicating whether another group of 7 bits follows.
+	 * @param offset - The offset to start reading from.
+	 * @returns An object containing the value and the length of the integer.
+	 */
 	readVL(offset: number) {
 		let result = 0;
 		let i = 0;
@@ -122,6 +140,10 @@ export class BufferReader {
 		return this.bufferLength;
 	}
 
+	/**
+	 * Returns a copy of the underlying buffer.
+	 * @returns - A copy of the underlying buffer.
+	 */
 	getBuffer() {
 		return this.buffer.slice(this.start, this.start + this.bufferLength);
 	}

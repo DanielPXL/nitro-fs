@@ -3,7 +3,15 @@ import { CartridgeHeader } from "./CartridgeHeader";
 import { NitroFAT } from "./NitroFAT";
 import { NitroFNT } from "./NitroFNT";
 
+/**
+ * Class for reading files from the NitroFS.
+ */
 export class NitroFS {
+	/**
+	 * Creates a NitroFS instance from a ROM buffer.
+	 * @param rom - The ROM buffer.
+	 * @returns The NitroFS instance.
+	 */
 	static fromRom(rom: ArrayBuffer) {
 		const nitroFS = new NitroFS();
 
@@ -37,6 +45,11 @@ export class NitroFS {
 	private fnt: NitroFNT;
 	private fileData: ArrayBuffer[];
 
+	/**
+	 * Reads a file from the NitroFS.
+	 * @param path - The path to the file.
+	 * @returns A buffer containing the file data.
+	 */
 	readFile(path: string) {
 		const directoryParts = path.split("/");
 		const fileName = directoryParts.pop()!;
@@ -58,6 +71,11 @@ export class NitroFS {
 		return this.fileData[file.id];
 	}
 
+	/**
+	 * Reads a directory from the NitroFS.
+	 * @param path - The path to the directory.
+	 * @returns An object containing the paths of every file and directory in the base directory.
+	 */
 	readDir(path: string) {
 		let directoryParts = path.split("/");
 		// Remove every empty string from the array
@@ -89,6 +107,11 @@ export class NitroFS {
 		};
 	}
 
+	/**
+	 * Checks if a file exists in the NitroFS.
+	 * @param path - The path to the file.
+	 * @returns Whether the file exists.
+	 */
 	exists(path: string) {
 		try {
 			this.readFile(path);
