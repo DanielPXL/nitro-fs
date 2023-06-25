@@ -8,6 +8,7 @@ import { SWAR } from "../SWAR/SWAR";
 import { Synthesizer } from "./Synthesizer";
 import { SequenceVariables } from "./SequenceVariables";
 import { Random } from "./Random";
+import { Note } from "../SSEQ/Note";
 
 export class Track {	
 	constructor(track: number, offset: number, sseq: SSEQ, sdat: SDAT, synth: Synthesizer, sampleRate: number, variables: SequenceVariables, random: Random, stopTrack: () => void, changeTempo: (tempo: number) => void, openTrack: (track: number, offset: number) => void) {
@@ -107,6 +108,9 @@ export class Track {
 	modulationSpeed: number = 16;
 	modulationDelay: number = 0;
 	modulationType: ModType = ModType.Pitch;
+	portamentoKey: Note = Note.C4;
+	portamentoTime: number = 0;
+	portamentoSwitch: boolean = false;
 
 	variables: SequenceVariables;
 	conditionalFlag: boolean = false;
@@ -121,10 +125,6 @@ export class Track {
 				this.stopTrackCallback(this.track);
 				return;
 			}
-			
-			// if (this.track === 1) {
-			// 	console.log("[" + this.pointer.toString(16).toUpperCase() + "] " + commandTypeToString(command.type) + " : " + JSON.stringify(command));
-			// }
 			
 			this.handlers[command.type].bind(this)(command as any);
 
@@ -147,10 +147,15 @@ export class Track {
 			modRange: this.modulationRange,
 			modSpeed: this.modulationSpeed,
 			modDelay: this.modulationDelay,
-			modType: this.modulationType
+			modType: this.modulationType,
+			portamentoKey: this.portamentoKey,
+			portamentoTime: this.portamentoTime,
+			portamentoSwitch: this.portamentoSwitch
 		}
 
 		this.synth.playNote(this.track, cmd.note, cmd.velocity, cmd.duration, trackInfo);
+
+		this.portamentoKey = cmd.note;
 	}
 
 	private Wait(cmd: Commands.Wait) {
@@ -280,7 +285,10 @@ export class Track {
 	private Priority(cmd: Commands.Priority) {}
 	private NoteWaitMode(cmd: Commands.NoteWaitMode) {}
 	private Tie(cmd: Commands.Tie) {}
-	private PortamentoControl(cmd: Commands.Portamento) {}
+
+	private PortamentoControl(cmd: Commands.Portamento) {
+		this.portamentoKey = cmd.key;
+	}
 
 	private ModulationDepth(cmd: Commands.ModulationDepth) {
 		this.modulationDepth = cmd.depth;
@@ -302,8 +310,14 @@ export class Track {
 		this.synth.channels[this.track].setModulation(this.modulationDepth, this.modulationRange, this.modulationSpeed, this.modulationDelay, this.modulationType);
 	}
 
-	private PortamentoSwitch(cmd: Commands.PortamentoSwitch) {}
-	private PortamentoTime(cmd: Commands.PortamentoTime) {}
+	private PortamentoSwitch(cmd: Commands.PortamentoSwitch) {
+		this.portamentoSwitch = cmd.enabled;
+	}
+
+	private PortamentoTime(cmd: Commands.PortamentoTime) {
+		this.portamentoTime = cmd.time;
+	}
+
 	private Attack(cmd: Commands.Attack) {}
 	private Decay(cmd: Commands.Decay) {}
 	private Sustain(cmd: Commands.Sustain) {}
@@ -352,4 +366,7 @@ export interface TrackInfo {
 	modSpeed: number;
 	modDelay: number;
 	modType: ModType;
+	portamentoKey: Note;
+	portamentoTime: number;
+	portamentoSwitch: boolean;
 }

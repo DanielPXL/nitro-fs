@@ -140,4 +140,8 @@ export class PSGPlayingNote implements PlayingNote {
 			this.modulationVolume = Math.pow(10, modulationValue / 10);
 		}
 	}
+
+	portamentoTick(time: number): void {
+		
+	}
 }

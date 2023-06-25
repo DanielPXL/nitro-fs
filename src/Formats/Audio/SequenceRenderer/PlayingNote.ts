@@ -13,4 +13,5 @@ export abstract class PlayingNote {
 	abstract setVolume(volume1: number, volume2: number): void;
 	abstract setModulation(modDepth: number, modRange: number, modSpeed: number, modDelay: number, modType: ModType): void;
 	abstract modulationTick(time: number): void;
+	abstract portamentoTick(time: number): void;
 }

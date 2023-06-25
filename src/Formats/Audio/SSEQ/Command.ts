@@ -326,7 +326,7 @@ export namespace Commands {
 
 	// 0xC9 (Portamento)
 	export class Portamento extends Command {
-		constructor(public portamento: number) {
+		constructor(public key: number) {
 			super();
 		}
 
