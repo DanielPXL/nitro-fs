@@ -144,6 +144,7 @@ export class SynthChannel {
 			if (this.playing[i]) {
 				this.playing[i].envelope.tick(time);
 				this.playing[i].modulationTick(time);
+				this.playing[i].portamentoTick(time);
 			}
 		}
 	}
