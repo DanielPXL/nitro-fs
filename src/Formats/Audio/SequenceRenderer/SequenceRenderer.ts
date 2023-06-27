@@ -7,33 +7,37 @@ import { SBNK } from "../SBNK/SBNK";
 import { Synthesizer } from "./Synthesizer";
 import { SWAR } from "../SWAR/SWAR";
 import { SequenceInfo } from "../SDAT/FileInfo";
+import { SequenceVariables } from "./SequenceVariables";
+import { Random } from "./Random";
 
 export class SequenceRenderer {
-	constructor(sseq: SSEQ, sseqInfo: SequenceInfo, sdat: SDAT, sampleRate: number, sink: (buffer: Float32Array[]) => void, bufferLength = 1024 * 4, activeTracks = 0xFFFF) {
-		this.sseq = sseq;
-		this.sdat = sdat;
-		this.sampleRate = sampleRate;
-		this.activeTracks = activeTracks;
+	constructor(info: RendererInfo) {
+		this.sseq = info.sseq;
+		this.sdat = info.sdat;
+		this.sampleRate = info.sampleRate ? info.sampleRate : 48000;
+		this.activeTracks = info.activeTracks ? info.activeTracks : 0xFFFF;
+		this.sequenceVariables = info.variables ? info.variables : new SequenceVariables();
+		this.random = new Random(info.seed);
 
-		const sbnkFile = sdat.fs.banks.find(b => b.id === sseqInfo.bankId);
+		const sbnkFile = this.sdat.fs.banks.find(b => b.id === info.sseqInfo.bankId);
 		const sbnk = new SBNK(sbnkFile.buffer);
-		const sbnkInfo = sdat.fs.infoBlock.bankInfo[sbnkFile.id];
+		const sbnkInfo = this.sdat.fs.infoBlock.bankInfo[sbnkFile.id];
 
 		let swar = [];
 		for (let i = 0; i < sbnkInfo.waveArchives.length; i++) {
 			const waveArchiveId = sbnkInfo.waveArchives[i];
-			const waveArchive = sdat.fs.waveArchives.find(w => w.id === waveArchiveId);
+			const waveArchive = this.sdat.fs.waveArchives.find(w => w.id === waveArchiveId);
 	
 			if (waveArchive) {
 				swar[i] = new SWAR(waveArchive.buffer);
 			}
 		}
 
-		this.synth = new Synthesizer(sbnk, swar, sampleRate, this.tempo, sink, bufferLength);
+		this.synth = new Synthesizer(sbnk, swar, info.sampleRate, this.tempo, info.sink, info.bufferLength);
 		
 		// this.samplesPerTick = SequenceRenderer.TICK_INTERVAL * sampleRate;
 		// Do this to avoid floating point rounding errors
-		this.samplesPerTick = ((64 * 2728) * sampleRate) / 33513982;
+		this.samplesPerTick = ((64 * 2728) * info.sampleRate) / 33513982;
 
 		this.tracks = [];
 		this.openTrack(0, 0);
@@ -47,8 +51,10 @@ export class SequenceRenderer {
 	synth: Synthesizer;
 	samplesPerTick: number;
 	tracks: Track[];
+	sequenceVariables: SequenceVariables;
 	tracksStarted: boolean = false;
 	activeTracks: number;
+	random: Random;
 
 	cycle: number = 0;
 	tempo: number = 120;
@@ -91,6 +97,8 @@ export class SequenceRenderer {
 			this.sdat,
 			this.synth,
 			this.sampleRate,
+			this.sequenceVariables,
+			this.random,
 			this.stopTrack.bind(this),
 			this.changeTempo.bind(this),
 			this.openTrack.bind(this)
@@ -113,4 +121,60 @@ export class SequenceRenderer {
 		this.tempo = tempo;
 		this.synth.bpm = tempo;
 	}
+}
+
+/**
+ * Information needed to render an SSEQ.
+ */
+export interface RendererInfo {
+	/**
+	 * The SDAT that contains the SSEQ, SBNK, and SWAR files.
+	 */
+	sdat: SDAT;
+
+	/**
+	 * The SSEQ to render.
+	 */
+	sseq: SSEQ;
+
+	/**
+	 * The SSEQ info block for the SSEQ to render.
+	 */
+	sseqInfo: SequenceInfo;
+
+	/**
+	 * The function to call when the renderer has a buffer to output.
+	 * @param buffer - A stereo buffer of 32-bit floating point samples. The length of the
+	 * buffers is always equal to the bufferLength parameter.
+	 */
+	sink: (buffer: Float32Array[]) => void;
+
+	/**
+	 * The length of the buffer to output. Defaults to 4096.
+	 */
+	bufferLength?: number;
+
+	/**
+	 * The sample rate to render at. Defaults to 48000.
+	 */
+	sampleRate?: number;
+
+	/**
+	 * The active tracks bitmask. Should be 16 bits long, with each bit corresponding to a track.
+	 * Defaults to 0xFFFF (all channels active).
+	 */
+	activeTracks?: number;
+
+	/**
+	 * The sequence variables to use. You can use this object even after the renderer has started,
+	 * or you can reuse it for multiple renderers, which will allow you to share variables
+	 * between them (although the DS resets the local variables between sequences, do that with variables.resetLocal()).
+	 * Defaults to a new SequenceVariables object.
+	 */
+	variables?: SequenceVariables;
+
+	/**
+	 * Seed for the random number generator. Defaults to Date.now().
+	 */
+	seed?: number;
 }

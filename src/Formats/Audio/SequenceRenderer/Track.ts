@@ -6,15 +6,19 @@ import { SequenceInfo } from "../SDAT/FileInfo";
 import { SBNK } from "../SBNK/SBNK";
 import { SWAR } from "../SWAR/SWAR";
 import { Synthesizer } from "./Synthesizer";
+import { SequenceVariables } from "./SequenceVariables";
+import { Random } from "./Random";
 
 export class Track {	
-	constructor(track: number, offset: number, sseq: SSEQ, sdat: SDAT, synth: Synthesizer, sampleRate: number, stopTrack: () => void, changeTempo: (tempo: number) => void, openTrack: (track: number, offset: number) => void) {
+	constructor(track: number, offset: number, sseq: SSEQ, sdat: SDAT, synth: Synthesizer, sampleRate: number, variables: SequenceVariables, random: Random, stopTrack: () => void, changeTempo: (tempo: number) => void, openTrack: (track: number, offset: number) => void) {
 		this.track = track;
 		this.offset = offset;
 		this.sseq = sseq;
 		this.sdat = sdat;
 		this.sampleRate = sampleRate;
 		this.synth = synth;
+		this.variables = variables;
+		this.random = random;
 		this.stopTrackCallback = stopTrack;
 		this.changeTempoCallback = changeTempo;
 		this.openTrackCallback = openTrack;
@@ -77,9 +81,7 @@ export class Track {
 		[CommandType.Fin]: this.Fin
 	}
 
-	// DEBUG
 	active: boolean = true;
-	// -----
 	
 	track: number;
 	offset: number;
@@ -105,6 +107,11 @@ export class Track {
 	modulationSpeed: number = 16;
 	modulationDelay: number = 0;
 	modulationType: ModType = ModType.Pitch;
+
+	variables: SequenceVariables;
+	conditionalFlag: boolean = false;
+
+	random: Random;
 
 	tick() {
 		while (this.wait === 0) {
@@ -171,20 +178,66 @@ export class Track {
 
 	private Random(cmd: Commands.Random) {}
 	private Variable(cmd: Commands.Variable) {}
-	private If(cmd: Commands.If) {}
-	private SetVariable(cmd: Commands.SetVariable) {}
-	private AddVariable(cmd: Commands.AddVariable) {}
-	private SubtractVariable(cmd: Commands.SubtractVariable) {}
-	private MultiplyVariable(cmd: Commands.MultiplyVariable) {}
-	private DivideVariable(cmd: Commands.DivideVariable) {}
-	private ShiftVariable(cmd: Commands.ShiftVariable) {}
-	private RandomVariable(cmd: Commands.RandomVariable) {}
-	private CompareEqual(cmd: Commands.CompareEqual) {}
-	private CompareGreaterOrEqual(cmd: Commands.CompareGreaterOrEqual) {}
-	private CompareGreater(cmd: Commands.CompareGreater) {}
-	private CompareLessOrEqual(cmd: Commands.CompareLessOrEqual) {}
-	private CompareLess(cmd: Commands.CompareLess) {}
-	private CompareNotEqual(cmd: Commands.CompareNotEqual) {}
+
+	private If(cmd: Commands.If) {
+		if (this.conditionalFlag) {
+			const subCmd = cmd.subCommand;
+			this.handlers[subCmd.type].bind(this)(subCmd as any);
+		}
+	}
+
+	private SetVariable(cmd: Commands.SetVariable) {
+		this.variables.set(cmd.variable, cmd.value);
+	}
+
+	private AddVariable(cmd: Commands.AddVariable) {
+		this.variables.set(cmd.variable, this.variables.get(cmd.variable) + cmd.value);
+	}
+
+	private SubtractVariable(cmd: Commands.SubtractVariable) {
+		this.variables.set(cmd.variable, this.variables.get(cmd.variable) - cmd.value);
+	}
+
+	private MultiplyVariable(cmd: Commands.MultiplyVariable) {
+		this.variables.set(cmd.variable, this.variables.get(cmd.variable) * cmd.value);
+	}
+	
+	private DivideVariable(cmd: Commands.DivideVariable) {
+		this.variables.set(cmd.variable, this.variables.get(cmd.variable) / cmd.value);
+	}
+
+	private ShiftVariable(cmd: Commands.ShiftVariable) {
+		this.variables.set(cmd.variable, this.variables.get(cmd.variable) << cmd.value);
+	}
+	
+	private RandomVariable(cmd: Commands.RandomVariable) {
+		const value = this.random.next() % (cmd.max - 1);
+		this.variables.set(cmd.variable, value);
+	}
+
+	private CompareEqual(cmd: Commands.CompareEqual) {
+		this.conditionalFlag = this.variables.get(cmd.variable) === cmd.value;
+	}
+
+	private CompareGreaterOrEqual(cmd: Commands.CompareGreaterOrEqual) {
+		this.conditionalFlag = this.variables.get(cmd.variable) >= cmd.value;
+	}
+
+	private CompareGreater(cmd: Commands.CompareGreater) {
+		this.conditionalFlag = this.variables.get(cmd.variable) > cmd.value;
+	}
+
+	private CompareLessOrEqual(cmd: Commands.CompareLessOrEqual) {
+		this.conditionalFlag = this.variables.get(cmd.variable) <= cmd.value;
+	}
+
+	private CompareLess(cmd: Commands.CompareLess) {
+		this.conditionalFlag = this.variables.get(cmd.variable) < cmd.value;
+	}
+
+	private CompareNotEqual(cmd: Commands.CompareNotEqual) {
+		this.conditionalFlag = this.variables.get(cmd.variable) !== cmd.value;
+	}
 
 	private Pan(cmd: Commands.Pan) {
 		if (cmd.pan < 64) {

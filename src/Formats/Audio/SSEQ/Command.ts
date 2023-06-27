@@ -16,6 +16,10 @@ export abstract class OffsetCommand extends Command {
 	abstract offset: number;
 }
 
+export abstract class NestedCommand extends Command {
+	abstract subCommand: Command;
+}
+
 export namespace Commands {
 	// 0x00 - 0x7F (Note)
 	export class Note extends Command {
@@ -74,33 +78,30 @@ export namespace Commands {
 	}
 
 	// 0xA0 (Random)
-	export class Random extends Command {
-		constructor(public subCommand: number, public min: number, public max: number) {
+	export class Random extends NestedCommand {
+		constructor(public subCommand: Command, public min: number, public max: number, public length: number) {
 			super();
 		}
 
 		type = CommandType.Random;
-		length = 0x06;
 	}
 
 	// 0xA1 (Variable)
-	export class Variable extends Command {
-		constructor(public subCommand: number, public variable: number) {
+	export class Variable extends NestedCommand {
+		constructor(public subCommand: Command, public variable: number, public length: number) {
 			super();
 		}
 
 		type = CommandType.Variable;
-		length = 0x03;
 	}
 
 	// 0xA2 (If)
-	export class If extends Command {
-		constructor(public subCommand: number) {
+	export class If extends NestedCommand {
+		constructor(public subCommand: Command, public length: number) {
 			super();
 		}
 
-		type = CommandType.If;
-		length = 0x02;
+		type = CommandType.If;		
 	}
 
 	// 0xB0 (SetVariable)

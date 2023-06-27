@@ -1,5 +1,5 @@
 import { BufferReader } from "../../../BufferReader";
-import { Command, OffsetCommand, Commands } from "./Command";
+import { Command, OffsetCommand, Commands, NestedCommand } from "./Command";
 import { CommandType, commandTypeToString } from "./CommandType";
 
 export class CommandParser {
@@ -18,7 +18,7 @@ export class CommandParser {
 		}
 		
 		const commands = [];
-		const offsetToIndexTable = [];
+		const offsetToIndexTable: number[] = [];
 		let pos = 0;
 		
 		while (pos < length) {
@@ -31,11 +31,20 @@ export class CommandParser {
 		}
 
 		// Resolve offsets
-		for (let i = 0; i < commands.length; i++) {
-			if (commands[i] instanceof OffsetCommand) {
-				const offsetCommand = commands[i] as OffsetCommand;
+		function resolveOffset(command: Command) {
+			if (command instanceof OffsetCommand) {
+				const offsetCommand = command as OffsetCommand;
 				offsetCommand.offset = offsetToIndexTable[offsetCommand.offset];
 			}
+
+			if (command instanceof NestedCommand) {
+				const nestedCommand = command as NestedCommand;
+				resolveOffset(nestedCommand.subCommand);
+			}
+		}
+
+		for (let i = 0; i < commands.length; i++) {
+			resolveOffset(commands[i]);
 		}
 
 		return commands;
@@ -81,23 +90,23 @@ export class CommandParser {
 				return new Commands.Call(offset);
 			}
 
+			// TODO: Do some more testing on Random and Variable commands since I have not found them in the wild yet
 			case CommandType.Random: { // 0xA0
-				const subCommand = raw.readUint8(pos + 1);
-				const min = raw.readInt16(pos + 2);
-				const max = raw.readInt16(pos + 2);
-				return new Commands.Random(subCommand, min, max);
+				const subCommand = this.parseCommand(raw, pos + 1);
+				const min = raw.readInt16(pos + subCommand.length + 1);
+				const max = raw.readInt16(pos + subCommand.length + 3);
+				return new Commands.Random(subCommand, min, max, subCommand.length + 0x04);
 			}
 
-			// TODO: All these variable commands are probably wrong
 			case CommandType.Variable: { // 0xA1
-				const subCommand = raw.readUint8(pos + 1);
+				const subCommand = this.parseCommand(raw, pos + 1);
 				const variable = raw.readUint8(pos + 2);
-				return new Commands.Variable(subCommand, variable);
+				return new Commands.Variable(subCommand, variable, subCommand.length + 0x01);
 			}
 
 			case CommandType.If: { // 0xA2
-				const subCommand = raw.readUint8(pos + 1);
-				return new Commands.If(subCommand);
+				const subCommand = this.parseCommand(raw, pos + 1);
+				return new Commands.If(subCommand, subCommand.length + 0x01);
 			}
 
 			case CommandType.SetVariable: { // 0xB0

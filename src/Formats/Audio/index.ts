@@ -21,7 +21,7 @@ export {
 } from "./SDAT/FileInfo";
 
 export { SSEQ, SSEQDataBlock } from "./SSEQ/SSEQ";
-export { Command, OffsetCommand, Commands, ModType } from "./SSEQ/Command";
+export { Command, OffsetCommand, NestedCommand, Commands, ModType } from "./SSEQ/Command";
 export { CommandType, commandTypeToString } from "./SSEQ/CommandType";
 export { CommandParser } from "./SSEQ/CommandParser";
 export { Note, noteToFrequency } from "./SSEQ/Note";
@@ -48,8 +48,9 @@ export {
 	ContainedInstrument
 } from "./SBNK/Instrument";
 
-export { SequenceRenderer } from "./SequenceRenderer/SequenceRenderer";
+export { SequenceRenderer, RendererInfo } from "./SequenceRenderer/SequenceRenderer";
 export { Track, TrackInfo } from "./SequenceRenderer/Track";
+export { SequenceVariables } from "./SequenceRenderer/SequenceVariables";
 export { Synthesizer } from "./SequenceRenderer/Synthesizer";
 export { SynthChannel } from "./SequenceRenderer/SynthChannel";
 export { PlayingNote } from "./SequenceRenderer/PlayingNote";
@@ -59,3 +60,4 @@ export { WhiteNoisePlayingNote } from "./SequenceRenderer/WhiteNoisePlayingNote"
 export { Resampler } from "./SequenceRenderer/Resampler";
 export { Envelope, EnvelopeState } from "./SequenceRenderer/Envelope";
 export { ADSRConverter } from "./SequenceRenderer/ADSRConverter";
+export { Random } from "./SequenceRenderer/Random";

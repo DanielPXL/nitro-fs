@@ -104,7 +104,13 @@ const sink = (chunk: Float32Array[]) => {
 }
 
 // Initialize the sequence renderer
-const renderer = new Audio.SequenceRenderer(sequence, sequenceFile.fileInfo, sdat, sampleRate, sink);
+const renderer = new Audio.SequenceRenderer({
+	sseq: sequence,
+	sseqInfo: sequenceFile.fileInfo,
+	sdat: sdat,
+	sampleRate: sampleRate, 
+	sink: sink
+});
 
 // Render the sequence until it's done
 while (!done) {
@@ -115,8 +121,7 @@ while (!done) {
 ```
 
 ## Known Issues
-- The SSEQ command parser parses the "programming" commands (like variable, random, if, etc.) incorrectly. Not many games use these commands though, so far I have only found them in The Legend of Zelda: Spirit Tracks.
-- The SequenceRenderer only supports a small subset of the available commands (see [here](src/Formats/Audio/SequenceRenderer/Track.ts) for more info). The most important ones are supported though, and many games already work fine.
+- The SequenceRenderer only supports a subset of the available commands (see [here](src/Formats/Audio/SequenceRenderer/Track.ts) for more info). The most important ones are supported though, and most games already work fine.
 
 ## Thanks to:
 - [Martin Korth's gbatek](https://problemkaputt.de/gbatek.htm) - documentation on everything related to the DS
