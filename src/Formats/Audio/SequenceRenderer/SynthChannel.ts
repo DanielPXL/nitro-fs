@@ -48,7 +48,7 @@ export class SynthChannel {
 	playNote(time: number, note: Note, velocity: number, stopTime?: number, trackInfo?: TrackInfo) {
 		const { noteInfo, isPSG, isWhiteNoise } = this.getNoteInfo(note);
 		if (noteInfo === null || noteInfo === undefined) {
-			console.log("Note or instrument not found in bank.");
+			console.warn(`Note ${Note[note]} not found in instrument ${this.programNumber}`);
 			return;
 		}
 
@@ -70,6 +70,11 @@ export class SynthChannel {
 		} else {
 			const swar = this.swars[noteInfo.waveArchiveId];
 			const swav = swar.waves[noteInfo.waveId];
+
+			if (swav === undefined) {
+				console.warn(`Wave ${noteInfo.waveId} not found in wave archive ${noteInfo.waveArchiveId}`);
+				return;
+			}
 	
 			const envelope = new Envelope(time, noteInfo.attack, noteInfo.decay, noteInfo.sustain, noteInfo.release, stopTime);
 	

@@ -28,13 +28,39 @@ export class CommandParser {
 			// console.log(`${pos} : ${commandTypeToString(command.type)} (${command.length})`);
 			commands.push(command);
 			pos += command.length;
+
+			// Special case for Newer Super Mario Bros. DS
+			// They have some data (appears to be junk data?) in between Jump and Fin commands
+			// The junk data always starts with Jump, followed by 0x00
+			// This needs to be skipped in order to parse the commands correctly
+			if (command.type === CommandType.Jump && raw.readUint8(pos) === 0x00) {
+				// Find next Fin command
+				let nextFin = -1;
+				for (let i = pos; i < length; i++) {
+					const commandType = raw.readUint8(i);
+					if (commandType === CommandType.Fin) {
+						nextFin = i;
+						break;
+					}
+				}
+
+				if (nextFin !== -1) {
+					// Skip the data
+					pos = nextFin;
+				}
+			}
 		}
 
 		// Resolve offsets
 		function resolveOffset(command: Command) {
 			if (command instanceof OffsetCommand) {
 				const offsetCommand = command as OffsetCommand;
-				offsetCommand.offset = offsetToIndexTable[offsetCommand.offset];
+				const o = offsetToIndexTable[offsetCommand.offset];
+				if (o === undefined) {
+					throw new Error(`Failed to resolve offset ${offsetCommand.offset}`);
+				}
+
+				offsetCommand.offset = o;
 			}
 
 			if (command instanceof NestedCommand) {
