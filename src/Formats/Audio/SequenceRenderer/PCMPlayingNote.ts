@@ -49,6 +49,7 @@ export class PCMPlayingNote implements PlayingNote {
 	portamentoStart?: Note;
 	portamentoTime;
 	notePlusPortamento: Note;
+	portamentoCounter = 0;
 
 	release(time: number) {
 		this.envelope.release(time);
@@ -83,11 +84,11 @@ export class PCMPlayingNote implements PlayingNote {
 	}
 
 	pitchBend(semitones: number) {
-		const freqBefore = noteToFrequency(this.note + this.trackInfo.pitchBendSemitones);
+		const freqBefore = noteToFrequency(this.notePlusPortamento + this.trackInfo.pitchBendSemitones + this.modulationPitch);
 
 		this.trackInfo.pitchBendSemitones = semitones;
 
-		const freqAfter = noteToFrequency(this.note + this.trackInfo.pitchBendSemitones);
+		const freqAfter = noteToFrequency(this.notePlusPortamento + this.trackInfo.pitchBendSemitones + this.modulationPitch);
 		const ratio = freqAfter / freqBefore;
 
 		this.sampleIndex = this.sampleIndex / ratio;
@@ -125,9 +126,9 @@ export class PCMPlayingNote implements PlayingNote {
 		
 		const modulationValue = modulationAmplitude * Math.sin(2 * Math.PI * modulationFreq * (time - this.modulationStartTime));
 		if (this.trackInfo.modType === ModType.Pitch) {
-			const freqBeforeModulation = noteToFrequency(this.note + this.trackInfo.pitchBendSemitones + this.modulationPitch);
+			const freqBeforeModulation = noteToFrequency(this.notePlusPortamento + this.trackInfo.pitchBendSemitones + this.modulationPitch);
 			this.modulationPitch = modulationValue;
-			const freqAfterModulation = noteToFrequency(this.note + this.trackInfo.pitchBendSemitones + this.modulationPitch);
+			const freqAfterModulation = noteToFrequency(this.notePlusPortamento + this.trackInfo.pitchBendSemitones + this.modulationPitch);
 			const ratio = freqAfterModulation / freqBeforeModulation;
 			this.sampleIndex = this.sampleIndex / ratio;
 		} else if (this.trackInfo.modType === ModType.Volume) {
@@ -141,8 +142,11 @@ export class PCMPlayingNote implements PlayingNote {
 			return;
 		}
 
-		// TODO: I don't know what exactly portamentoTime is supposed to do
-		const t = ((time - this.envelope.startTime) / (this.envelope.stopTime - this.envelope.startTime)) * (this.portamentoTime + 1);
+		if (this.portamentoTime === 0) {
+			return;
+		}
+		
+		const t = this.portamentoCounter / this.portamentoTime;
 		const portamento = this.portamentoStart + (this.note - this.portamentoStart) * Math.min(1, Math.max(0, t));
 
 		const freqBeforeModulation = noteToFrequency(this.notePlusPortamento + this.trackInfo.pitchBendSemitones + this.modulationPitch);
@@ -152,5 +156,7 @@ export class PCMPlayingNote implements PlayingNote {
 		const freqAfterModulation = noteToFrequency(this.notePlusPortamento + this.trackInfo.pitchBendSemitones + this.modulationPitch);
 		const ratio = freqAfterModulation / freqBeforeModulation;
 		this.sampleIndex = this.sampleIndex / ratio;
+
+		this.portamentoCounter++;
 	}
 }

@@ -311,6 +311,10 @@ export class Track {
 	}
 
 	private PortamentoSwitch(cmd: Commands.PortamentoSwitch) {
+		if (cmd.enabled && !this.portamentoSwitch) {
+			this.portamentoKey = Note.C4;
+		}
+
 		this.portamentoSwitch = cmd.enabled;
 	}
 
