@@ -10,6 +10,7 @@ import { ModType } from "../SSEQ/Command";
 export class PCMPlayingNote implements PlayingNote {
 	constructor(note: Note, envelope: Envelope, swav: SWAV, baseNote: Note, sampleRate: number, velocity: number, trackInfo: TrackInfo, doneCallback: () => void) {
 		this.note = note;
+		this.notePlusPortamento = note;
 		this.envelope = envelope;
 		this.swav = swav;
 		this.baseNote = baseNote;
@@ -19,6 +20,13 @@ export class PCMPlayingNote implements PlayingNote {
 		this.doneCallback = doneCallback;
 
 		this.sample = swav.toPCM();
+
+		// These need to be copied because they can't be modified while a note is playing
+		this.portamentoTime = trackInfo.portamentoTime;
+		if (trackInfo.portamentoSwitch) {
+			this.portamentoStart = trackInfo.portamentoKey;
+			this.notePlusPortamento = trackInfo.portamentoKey;
+		}
 	}
 
 	note: Note;
@@ -38,12 +46,17 @@ export class PCMPlayingNote implements PlayingNote {
 	modulationTickCount = 0;
 	modulationStartTime?: number;
 
+	portamentoStart?: Note;
+	portamentoTime;
+	notePlusPortamento: Note;
+	portamentoCounter = 0;
+
 	release(time: number) {
 		this.envelope.release(time);
 	}
 
 	getValue(time: number) {
-		const ratio = noteToFrequency(this.note + this.trackInfo.pitchBendSemitones + this.modulationPitch) / noteToFrequency(this.baseNote);
+		const ratio = noteToFrequency(this.notePlusPortamento + this.trackInfo.pitchBendSemitones + this.modulationPitch) / noteToFrequency(this.baseNote);
 
 		const sample = Resampler.singleSample(
 			this.sample,
@@ -71,11 +84,11 @@ export class PCMPlayingNote implements PlayingNote {
 	}
 
 	pitchBend(semitones: number) {
-		const freqBefore = noteToFrequency(this.note + this.trackInfo.pitchBendSemitones);
+		const freqBefore = noteToFrequency(this.notePlusPortamento + this.trackInfo.pitchBendSemitones + this.modulationPitch);
 
 		this.trackInfo.pitchBendSemitones = semitones;
 
-		const freqAfter = noteToFrequency(this.note + this.trackInfo.pitchBendSemitones);
+		const freqAfter = noteToFrequency(this.notePlusPortamento + this.trackInfo.pitchBendSemitones + this.modulationPitch);
 		const ratio = freqAfter / freqBefore;
 
 		this.sampleIndex = this.sampleIndex / ratio;
@@ -113,14 +126,37 @@ export class PCMPlayingNote implements PlayingNote {
 		
 		const modulationValue = modulationAmplitude * Math.sin(2 * Math.PI * modulationFreq * (time - this.modulationStartTime));
 		if (this.trackInfo.modType === ModType.Pitch) {
-			const freqBeforeModulation = noteToFrequency(this.note + this.trackInfo.pitchBendSemitones + this.modulationPitch);
+			const freqBeforeModulation = noteToFrequency(this.notePlusPortamento + this.trackInfo.pitchBendSemitones + this.modulationPitch);
 			this.modulationPitch = modulationValue;
-			const freqAfterModulation = noteToFrequency(this.note + this.trackInfo.pitchBendSemitones + this.modulationPitch);
+			const freqAfterModulation = noteToFrequency(this.notePlusPortamento + this.trackInfo.pitchBendSemitones + this.modulationPitch);
 			const ratio = freqAfterModulation / freqBeforeModulation;
 			this.sampleIndex = this.sampleIndex / ratio;
 		} else if (this.trackInfo.modType === ModType.Volume) {
 			// Modulation is given in decibels
 			this.modulationVolume = Math.pow(10, modulationValue / 10);
 		}
+	}
+
+	portamentoTick(time: number) {
+		if (this.portamentoStart === undefined) {
+			return;
+		}
+
+		if (this.portamentoTime === 0) {
+			return;
+		}
+		
+		const t = this.portamentoCounter / this.portamentoTime;
+		const portamento = this.portamentoStart + (this.note - this.portamentoStart) * Math.min(1, Math.max(0, t));
+
+		const freqBeforeModulation = noteToFrequency(this.notePlusPortamento + this.trackInfo.pitchBendSemitones + this.modulationPitch);
+
+		this.notePlusPortamento = portamento;
+
+		const freqAfterModulation = noteToFrequency(this.notePlusPortamento + this.trackInfo.pitchBendSemitones + this.modulationPitch);
+		const ratio = freqAfterModulation / freqBeforeModulation;
+		this.sampleIndex = this.sampleIndex / ratio;
+
+		this.portamentoCounter++;
 	}
 }

@@ -62,4 +62,8 @@ export class WhiteNoisePlayingNote implements PlayingNote {
 	modulationTick(time: number) {
 		
 	}
+
+	portamentoTick(time: number) {
+
+	}
 }

@@ -259,8 +259,8 @@ export class CommandParser {
 			}
 
 			case CommandType.Portamento: { // 0xC9
-				const portamento = raw.readUint8(pos + 1);
-				return new Commands.Portamento(portamento);
+				const key = raw.readUint8(pos + 1);
+				return new Commands.Portamento(key);
 			}
 
 			case CommandType.ModulationDepth: { // 0xCA
