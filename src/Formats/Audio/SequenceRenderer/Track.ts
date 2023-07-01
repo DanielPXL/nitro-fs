@@ -111,6 +111,8 @@ export class Track {
 	portamentoKey: Note = Note.C4;
 	portamentoTime: number = 0;
 	portamentoSwitch: boolean = false;
+	transpose: number = 0;
+	noteWaitEnabled: boolean = false;
 
 	variables: SequenceVariables;
 	conditionalFlag: boolean = false;
@@ -153,9 +155,13 @@ export class Track {
 			portamentoSwitch: this.portamentoSwitch
 		}
 
-		this.synth.playNote(this.track, cmd.note, cmd.velocity, cmd.duration, trackInfo);
+		this.synth.playNote(this.track, cmd.note + this.transpose, cmd.velocity, cmd.duration, trackInfo);
 
-		this.portamentoKey = cmd.note;
+		this.portamentoKey = cmd.note + this.transpose;
+
+		if (this.noteWaitEnabled) {
+			this.wait = cmd.duration;
+		}
 	}
 
 	private Wait(cmd: Commands.Wait) {
@@ -258,7 +264,10 @@ export class Track {
 	}
 
 	private MainVolume(cmd: Commands.MainVolume) {}
-	private Transpose(cmd: Commands.Transpose) {}
+
+	private Transpose(cmd: Commands.Transpose) {
+		this.transpose = cmd.transpose;
+	}
 
 	private PitchBend(cmd: Commands.PitchBend) {
 		// Pitch bend is between -128 and 127
@@ -283,7 +292,11 @@ export class Track {
 	}
 
 	private Priority(cmd: Commands.Priority) {}
-	private NoteWaitMode(cmd: Commands.NoteWaitMode) {}
+
+	private NoteWaitMode(cmd: Commands.NoteWaitMode) {
+		this.noteWaitEnabled = cmd.enabled;
+	}
+
 	private Tie(cmd: Commands.Tie) {}
 
 	private PortamentoControl(cmd: Commands.Portamento) {
