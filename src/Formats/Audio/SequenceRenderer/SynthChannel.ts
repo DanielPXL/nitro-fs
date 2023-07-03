@@ -6,11 +6,12 @@ import { ModType } from "../SSEQ/Command";
 import { Note } from "../SSEQ/Note";
 import { SWAR } from "../SWAR/SWAR";
 import { Envelope } from "./Envelope";
-import { PCMPlayingNote } from "./PCMPlayingNote";
-import { PSGPlayingNote } from "./PSGPlayingNote";
+import { Sample } from "./Sample";
+import { PCMSample } from "./PCMSample";
+import { PSGSample } from "./PSGSample";
+import { WhiteNoiseSample } from "./WhiteNoiseSample";
 import { PlayingNote } from "./PlayingNote";
 import { TrackInfo } from "./Track";
-import { WhiteNoisePlayingNote } from "./WhiteNoisePlayingNote";
 
 export class SynthChannel {
 	constructor(sampleRate: number, bank: SBNK, swars: SWAR[]) {
@@ -52,21 +53,14 @@ export class SynthChannel {
 			return;
 		}
 
+		const envelope = new Envelope(time, noteInfo.attack, noteInfo.decay, noteInfo.sustain, noteInfo.release, stopTime);
+
+		let sample: Sample;
 		if (isPSG) {
 			const dutyCycle = noteInfo.waveId;
-			const envelope = new Envelope(time, noteInfo.attack, noteInfo.decay, noteInfo.sustain, noteInfo.release, stopTime);
-
-			const index = this.findFirstEmpty();
-			this.playing[index] = new PSGPlayingNote(note, envelope, dutyCycle, this.sampleRate, velocity, trackInfo, () => {
-				this.playing[index] = null;
-			});
+			sample = new PSGSample(dutyCycle);
 		} else if (isWhiteNoise) {
-			const envelope = new Envelope(time, noteInfo.attack, noteInfo.decay, noteInfo.sustain, noteInfo.release, stopTime);
-
-			const index = this.findFirstEmpty();
-			this.playing[index] = new WhiteNoisePlayingNote(envelope, velocity, trackInfo, () => {
-				this.playing[index] = null;
-			});
+			sample = new WhiteNoiseSample();
 		} else {
 			const swar = this.swars[noteInfo.waveArchiveId];
 			const swav = swar.waves[noteInfo.waveId];
@@ -75,14 +69,14 @@ export class SynthChannel {
 				console.warn(`Wave ${noteInfo.waveId} not found in wave archive ${noteInfo.waveArchiveId}`);
 				return;
 			}
-	
-			const envelope = new Envelope(time, noteInfo.attack, noteInfo.decay, noteInfo.sustain, noteInfo.release, stopTime);
-	
-			const index = this.findFirstEmpty();
-			this.playing[index] = new PCMPlayingNote(note, envelope, swav, noteInfo.baseNote, this.sampleRate, velocity, trackInfo, () => {
-				this.playing[index] = null;
-			});
+
+			sample = new PCMSample(swav, noteInfo.baseNote);
 		}
+
+		const index = this.findFirstEmpty();
+		this.playing[index] = new PlayingNote(note, envelope, sample, this.sampleRate, velocity, trackInfo, () => {
+			this.playing[index] = null;
+		});
 	}
 
 	getNoteInfo(note: Note): { noteInfo: NoteInfo, isPSG: boolean, isWhiteNoise: boolean } {

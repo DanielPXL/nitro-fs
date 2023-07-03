@@ -1,10 +1,6 @@
-import { DirectInstrument, Instrument } from "../SBNK/Instrument";
 import { SBNK } from "../SBNK/SBNK";
-import { BankInfo } from "../SDAT/FileInfo";
-import { Note, noteToFrequency } from "../SSEQ/Note";
+import { Note } from "../SSEQ/Note";
 import { SWAR } from "../SWAR/SWAR";
-import { Envelope } from "./Envelope";
-import { PCMPlayingNote } from "./PCMPlayingNote";
 import { SynthChannel } from "./SynthChannel";
 import { TrackInfo } from "./Track";
 
