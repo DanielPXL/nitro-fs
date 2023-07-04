@@ -1,5 +1,3 @@
-import { SWAV } from "../SWAV/SWAV";
-
 export class Resampler {
 	private static readonly SINC_WINDOW = 3;
 

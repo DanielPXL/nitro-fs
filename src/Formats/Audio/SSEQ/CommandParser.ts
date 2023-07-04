@@ -1,6 +1,6 @@
 import { BufferReader } from "../../../BufferReader";
 import { Command, OffsetCommand, Commands, NestedCommand } from "./Command";
-import { CommandType, commandTypeToString } from "./CommandType";
+import { CommandType } from "./CommandType";
 
 export class CommandParser {
 	static parseCommands(raw: BufferReader, length: number) {

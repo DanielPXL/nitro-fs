@@ -1,10 +1,7 @@
-import { CommandType, commandTypeToString } from "../SSEQ/CommandType";
+import { CommandType } from "../SSEQ/CommandType";
 import { SDAT } from "../SDAT/SDAT";
 import { SSEQ } from "../SSEQ/SSEQ";
 import { Commands, ModType } from "../SSEQ/Command";
-import { SequenceInfo } from "../SDAT/FileInfo";
-import { SBNK } from "../SBNK/SBNK";
-import { SWAR } from "../SWAR/SWAR";
 import { Synthesizer } from "./Synthesizer";
 import { SequenceVariables } from "./SequenceVariables";
 import { Random } from "./Random";

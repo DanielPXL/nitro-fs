@@ -1,5 +1,4 @@
 import { CommandType } from "../SSEQ/CommandType";
-import { Commands } from "../SSEQ/Command";
 import { SDAT } from "../SDAT/SDAT";
 import { SSEQ } from "../SSEQ/SSEQ";
 import { Track } from "./Track";

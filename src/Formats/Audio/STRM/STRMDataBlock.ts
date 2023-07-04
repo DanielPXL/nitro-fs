@@ -1,6 +1,6 @@
 import { BufferReader } from "../../../BufferReader";
 import { Block } from "../Common/Block";
-import { Encoding, EncodingType } from "../Common/Encoding";
+import { Encoding } from "../Common/Encoding";
 import { STRMInfoBlock } from "./STRMInfoBlock";
 
 // https://gota7.github.io/NitroStudio2/specs/stream.html
