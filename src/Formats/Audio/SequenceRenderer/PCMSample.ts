@@ -17,7 +17,7 @@ export class PCMSample implements Sample {
 	getValue(targetSampleRate: number, index: number) {
 		return Resampler.singleSample(
 			this.sample,
-			this.swav.dataBlock.samplingRate, 
+			this.swav.dataBlock.sampleRate, 
 			targetSampleRate,
 			index,
 			this.swav.dataBlock.loop ? this.swav.dataBlock.loopStart : undefined,

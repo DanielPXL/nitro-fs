@@ -16,9 +16,9 @@ export class STRMInfoBlock extends Block {
 		this.channelCount = raw.readUint8(0x0A);
 		// 0x0B (1 byte) - Padding
 
-		// 0x0C (2 byte) - Sampling rate
-		this.samplingRate = raw.readUint16(0x0C);
-		// 0x0E (2 byte) - Clock time -> floor( (523655.96875 * (1 / samplingRate) ) )
+		// 0x0C (2 byte) - Sample rate
+		this.sampleRate = raw.readUint16(0x0C);
+		// 0x0E (2 byte) - Clock time -> floor( (523655.96875 * (1 / sampleRate) ) )
 		this.clockTime = raw.readUint16(0x0E);
 		// 0x10 (4 byte) - Loop start in samples
 		this.loopStart = raw.readUint32(0x10);
@@ -41,7 +41,7 @@ export class STRMInfoBlock extends Block {
 	encoding: EncodingType;
 	loop: boolean;
 	channelCount: number;
-	samplingRate: number;
+	sampleRate: number;
 	clockTime: number;
 	loopStart: number;
 	sampleCount: number;

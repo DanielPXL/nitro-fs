@@ -37,9 +37,9 @@ export class SWAVDataBlock extends Block {
 		this.encoding = raw.readUint8(0x00);
 		// 0x01 (1 byte) - Loop
 		this.loop = raw.readUint8(0x01) === 1;
-		// 0x02 (2 bytes) - Sampling rate
-		this.samplingRate = raw.readUint16(0x02);
-		// 0x04 (2 bytes) - Clock time (16756991 / sampling rate)
+		// 0x02 (2 bytes) - Sample rate
+		this.sampleRate = raw.readUint16(0x02);
+		// 0x04 (2 bytes) - Clock time (16756991 / sample rate)
 		this.clockTime = raw.readUint16(0x04);
 		// 0x06 (2 bytes) - Loop start (in 32-bit words)
 		const loopStartOffset = raw.readUint16(0x06);
@@ -67,7 +67,7 @@ export class SWAVDataBlock extends Block {
 
 	encoding: EncodingType;
 	loop: boolean;
-	samplingRate: number;
+	sampleRate: number;
 	clockTime: number;
 	loopStart: number;
 	loopLength: number;
