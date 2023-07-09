@@ -33,7 +33,6 @@ export { STRMInfoBlock } from "./STRM/STRMInfoBlock";
 export { SWAR } from "./SWAR/SWAR";
 
 export { SWAV, SWAVDataBlock } from "./SWAV/SWAV";
-export { SWAVHeader } from "./SWAV/SWAVHeader";
 
 export { SBNK } from "./SBNK/SBNK";
 export { SBNKDataBlock, InstrumentTableEntry } from "./SBNK/SBNKDataBlock";
