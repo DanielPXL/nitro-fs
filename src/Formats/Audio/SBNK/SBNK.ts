@@ -5,6 +5,9 @@ import { SBNKDataBlock } from "./SBNKDataBlock";
 
 // https://gota7.github.io/NitroStudio2/specs/bank.html
 
+/**
+ * Sound Bank, contains instrument definitions.
+ */
 export class SBNK {
 	constructor(raw: BufferReader) {
 		this.header = new SoundFileHeader(raw, "SBNK");

@@ -9,6 +9,9 @@ import { SequenceInfo } from "../SDAT/FileInfo";
 import { SequenceVariables } from "./SequenceVariables";
 import { Random } from "./Random";
 
+/**
+ * Renders an SSEQ to a stereo buffer of 32-bit floating point samples.
+ */
 export class SequenceRenderer {
 	constructor(info: RendererInfo) {
 		this.sseq = info.sseq;
@@ -20,7 +23,7 @@ export class SequenceRenderer {
 
 		const sbnkFile = this.sdat.fs.banks.find(b => b.id === info.sseqInfo.bankId);
 		const sbnk = new SBNK(sbnkFile.buffer);
-		const sbnkInfo = this.sdat.fs.infoBlock.bankInfo[sbnkFile.id];
+		const sbnkInfo = sbnkFile.fileInfo;
 
 		let swar = [];
 		for (let i = 0; i < sbnkInfo.waveArchives.length; i++) {
@@ -58,30 +61,25 @@ export class SequenceRenderer {
 	cycle: number = 0;
 	tempo: number = 120;
 
+	/**
+	 * Runs the renderer for one tick. Call this in a loop to render the entire sequence.
+	 * The renderer will call the sink function when it has a buffer to output.
+	 */
 	tick() {
 		this.synth.tick(this.samplesPerTick);
 		
-		this.cycle += (this.tempo);
+		this.cycle += this.tempo;
 		if (this.cycle < 240) {
 			return;
 		}
 
 		this.cycle -= 240;
 
-		if (this.tracksStarted) {
-			for (const track of this.tracks) {
-				if (track) {
-					track.tick();
-				}
+		for (const track of this.tracks) {
+			if (track) {
+				track.tick();
 			}
-		} else {
-			this.tracks[0].tick();
-
-			const nextCommandType = this.sseq.data.commands[this.tracks[0].offset + 1].type;
-			if (nextCommandType === CommandType.AllocateTracks || nextCommandType === CommandType.OpenTrack) {
-				this.tracksStarted = true;
-			}
-		}
+		}		
 	}
 	
 	private openTrack(track: number, offset: number) {

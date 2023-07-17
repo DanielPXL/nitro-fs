@@ -11,14 +11,9 @@ export class Synthesizer {
 		this.sampleRate = sampleRate;
 		this.bpm = bpm;
 		this.bufferLength = bufferLength;
-		this.flush = sink;
+		this.sink = sink;
 
-		if (this.bufferLength % 2 !== 0) {
-			throw new Error("Buffer length must be a multiple of 2");
-		}
-
-		this.buffer = [];
-		
+		this.buffer = [];		
 		for (let i = 0; i < 2; i++) {
 			this.buffer[i] = new Float32Array(this.bufferLength);
 		}
@@ -36,7 +31,7 @@ export class Synthesizer {
 	sampleRate: number;
 	bpm: number;
 	bufferLength: number;
-	flush: (buffer: Float32Array[]) => void;
+	sink: (buffer: Float32Array[]) => void;
 	timePerSample: number;
 
 	sampleRemainder = 0;
@@ -61,11 +56,9 @@ export class Synthesizer {
 			let sample: number[] = [0, 0];
 
 			for (let j = 0; j < this.channels.length; j++) {
-				const samples = this.channels[j].getValue(this.time);
+				const samples = this.channels[j].getValue();
 				for (let k = 0; k < samples.length; k++) {
-					// TODO?: This can cause clipping in non-float formats, but I don't really see a way to fix it
-					// If we divide by 16 instead of 8, it's too quiet, and if we don't divide at all, it clips a lot
-					sample[k] += samples[k] / 8;
+					sample[k] += samples[k] / 16;
 				}
 			}
 
@@ -78,7 +71,7 @@ export class Synthesizer {
 
 			if (this.pos >= this.bufferLength) {
 				this.pos = 0;
-				this.flush(this.buffer);
+				this.sink(this.buffer);
 			}
 		}
 
@@ -96,9 +89,5 @@ export class Synthesizer {
 		}
 
 		this.channels[track].playNote(this.time, note, velocity, stopTime, trackInfo);
-	}
-
-	stopNote(track: number) {
-		this.channels[track].releaseNote(this.time);
 	}
 }

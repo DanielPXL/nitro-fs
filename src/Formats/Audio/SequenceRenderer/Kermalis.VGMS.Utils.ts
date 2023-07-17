@@ -5,7 +5,7 @@
  * been commented out in order to reduce the size of the compiled JS file.
  * 
  * The original version can be found here:
- * https://github.com/Kermalis/VGMusicStudio/blob/master/VG%20Music%20Studio/Core/NDS/SDAT/Utils.cs
+ * https://github.com/Kermalis/VGMusicStudio/blob/d14a38e264eeb1392289eeb2bd5b450c92877949/VG%20Music%20Studio/Core/NDS/SDAT/Utils.cs
  */
 
 export class KermalisVGMSUtils

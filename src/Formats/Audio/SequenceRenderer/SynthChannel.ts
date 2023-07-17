@@ -30,11 +30,11 @@ export class SynthChannel {
 	pan = 0;
 	playing: PlayingNote[] = [];
 
-	getValue(time: number) {
+	getValue() {
 		let sum = 0;
 		for (let i = 0; i < this.playing.length; i++) {
 			if (this.playing[i]) {
-				sum += this.playing[i].getValue(time);
+				sum += this.playing[i].getValue();
 			}
 		}
 
@@ -143,15 +143,7 @@ export class SynthChannel {
 			if (this.playing[i]) {
 				this.playing[i].envelope.tick(time);
 				this.playing[i].modulationTick(time);
-				this.playing[i].portamentoTick(time);
-			}
-		}
-	}
-
-	releaseNote(time: number) {
-		for (let i = 0; i < this.playing.length; i++) {
-			if (this.playing[i]) {
-				this.playing[i].release(time);
+				this.playing[i].portamentoTick();
 			}
 		}
 	}

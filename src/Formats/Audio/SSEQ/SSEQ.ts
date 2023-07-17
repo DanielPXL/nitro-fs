@@ -4,6 +4,9 @@ import { SoundFileHeader } from "../Common/SoundFileHeader";
 import { Command } from "./Command";
 import { CommandParser } from "./CommandParser";
 
+/**
+ * Sound Sequence, contains sequence commands (similar to MIDI).
+ */
 export class SSEQ {
 	constructor(raw: BufferReader) {
 		this.header = new SoundFileHeader(raw, "SSEQ");

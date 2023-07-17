@@ -5,6 +5,9 @@ import { STRMInfoBlock } from "./STRMInfoBlock";
 
 // https://gota7.github.io/NitroStudio2/specs/stream.html
 
+/**
+ * Stream, contains streamed audio data.
+ */
 export class STRM {
 	constructor(raw: BufferReader) {
 		const header = new SoundFileHeader(raw, "STRM");

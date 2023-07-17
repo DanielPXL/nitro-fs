@@ -5,6 +5,9 @@ import { SoundFileHeader } from "../Common/SoundFileHeader";
 
 // https://gota7.github.io/NitroStudio2/specs/wave.html
 
+/**
+ * Wave, contains audio data.
+ */
 export class SWAV {
 	constructor(raw: BufferReader, hasHeader: boolean) {
 		if (hasHeader) {

@@ -46,11 +46,7 @@ export class PlayingNote {
 	notePlusPortamento: Note;
 	portamentoCounter = 0;
 
-	release(time: number) {
-		this.envelope.release(time);
-	}
-
-	getValue(time: number) {
+	getValue() {
 		const ratio = noteToFrequency(this.notePlusPortamento + this.trackInfo.pitchBendSemitones + this.modulationPitch) / this.baseFreq;
 
 		const s = this.sample.getValue(this.sampleRate / ratio, Math.floor(this.sampleIndex));
@@ -62,7 +58,7 @@ export class PlayingNote {
 		}
 
 		const volume = this.velocity
-			+ this.envelope.getGain()
+			+ this.envelope.gain
 			+ ADSRConverter.convertSustain(this.trackInfo.volume1)
 			+ ADSRConverter.convertSustain(this.trackInfo.volume2);
 		
@@ -124,7 +120,7 @@ export class PlayingNote {
 		}
 	}
 
-	portamentoTick(time: number) {
+	portamentoTick() {
 		if (this.portamentoStart === undefined) {
 			return;
 		}

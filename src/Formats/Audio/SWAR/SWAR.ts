@@ -6,6 +6,9 @@ import { SWAV } from "../SWAV/SWAV";
 
 // https://gota7.github.io/NitroStudio2/specs/wave.html
 
+/**
+ * Sound Archive, contains multiple SWAV files.
+ */
 export class SWAR {
 	constructor(raw: BufferReader) {
 		const header = new SoundFileHeader(raw, "SWAR");

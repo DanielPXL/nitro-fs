@@ -1,4 +1,4 @@
-import { KermalisVGMSUtils } from "./Kermalis.VGMST.Utils";
+import { KermalisVGMSUtils } from "./Kermalis.VGMS.Utils";
 
 // https://web.archive.org/web/20201021055347/https://sites.google.com/site/kiwids/articulation.htm
 

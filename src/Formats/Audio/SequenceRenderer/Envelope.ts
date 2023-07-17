@@ -78,26 +78,6 @@ export class Envelope {
 		}
 	}
 
-	getGain() {
-		return this.gain;
-	}
-
-	release(time: number) {
-		this.stopTime = time;
-	}
-
-	static normalize(gain: number) {
-		if (gain < -92544) {
-			return 0;
-		}
-
-		if (gain > 0) {
-			return 1;
-		}
-
-		return (gain + 92544) / 92544;
-	}
-
 	get isDone() {
 		return this.state === EnvelopeState.Release && this.gain <= -92544;
 	}
