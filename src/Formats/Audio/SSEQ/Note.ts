@@ -131,16 +131,20 @@ export enum Note {
 
 const noteToFrequencies: number[] = [];
 
-for (let i = 0; i < 128; i++) {
-	noteToFrequencies[i] = 440 * Math.pow(2, (i - 69) / 12);
+for (let i = -32; i < 128; i++) {
+	noteToFrequencies[i + 32] = 440 * Math.pow(2, (i - 69) / 12);
 }
 
 export function noteToFrequency(note: Note) {
-	const noteMod1 = note % 1;
-	if (noteMod1 === 0) {
-		return noteToFrequencies[note];
+	if (note < -32 || note >= 128) {
+		return 440 * Math.pow(2, (note - 69) / 12);
 	}
 
-	const lower = note - noteMod1;
+	const noteMod1 = note % 1;
+	if (noteMod1 === 0) {
+		return noteToFrequencies[note + 32];
+	}
+
+	const lower = note - noteMod1 + 32;
 	return noteToFrequencies[lower] * (1 - noteMod1) + noteToFrequencies[lower + 1] * noteMod1;
 }
