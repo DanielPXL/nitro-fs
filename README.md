@@ -13,11 +13,13 @@ If you need help with something, feel free to ask me on Discord (danielpxl).
 	- STRM (Sound Stream)
 	- SWAR (Sound Wave Archive)
 	- SBNK (Sound Bank)
-	- SSAR (Sound Sequence Archive) support is planned
+	- SSAR (Sound Sequence Archive)
 - BTX (3D Model Texture)
 
 ## Installation
-There is no npm package yet. You can build the library yourself by cloning the repository and running `npm run build`. The output will be in the `dist` folder.
+```bash
+npm install nitro-fs
+```
 
 ## Usage
 ### Initializing NitroFS
@@ -69,10 +71,6 @@ console.log(sdat);
 ### Converting an SSEQ file to PCM
 ```typescript
 // Assuming you have already parsed the SDAT file
-// Find the sequence file by name
-const sequenceFile = sdat.fs.sequences.find(seq => seq.name === "SEQ_BA_AKAGI");
-// Parse the sequence file
-const sequence = new Audio.SSEQ(sequenceFile.buffer);
 
 // Desired sample rate and number of seconds to render
 const sampleRate = 48000;
@@ -105,9 +103,7 @@ const sink = (chunk: Float32Array[]) => {
 
 // Initialize the sequence renderer
 const renderer = new Audio.SequenceRenderer({
-	sseq: sequence,
-	sseqInfo: sequenceFile.fileInfo,
-	sdat: sdat,
+	file: Audio.SequenceRenderer.makeInfoSSEQ(sdat, "SEQ_BA_AKAGI")
 	sampleRate: sampleRate, 
 	sink: sink
 });
@@ -122,6 +118,7 @@ while (!done) {
 
 ## Known Issues
 - The SequenceRenderer only supports a subset of the available commands (see [here](src/Formats/Audio/SequenceRenderer/Track.ts) for more info). The most important ones are supported though, and most games already work fine.
+- SSARs are parsed correctly (I think?), but the SequenceRenderer doesn't really support them yet.
 
 ## Thanks to:
 - [Martin Korth's gbatek](https://problemkaputt.de/gbatek.htm) - documentation on everything related to the DS
