@@ -20,6 +20,13 @@
     "sseq",
     "strm"
   ],
+  "homepage": "https://github.com/DanielPXL/nitro-fs",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/DanielPXL/nitro-fs.git"
+  },
+  "author": "DanielPXL",
+  "license": "LGPL-3.0-or-later",
   "scripts": {
     "build": "rollup -c && api-extractor run --local && rm -r dist/temp/",
     "dev": "rollup -c --watch --watch.onEnd \"npx api-extractor run --local && rm -r dist/temp/\"",
@@ -29,8 +36,6 @@
   "files": [
     "dist"
   ],
-  "author": "DanielPXL",
-  "license": "MPL-2.0",
   "devDependencies": {
     "@microsoft/api-extractor": "^7.34.4",
     "@rollup/plugin-node-resolve": "^15.0.2",
