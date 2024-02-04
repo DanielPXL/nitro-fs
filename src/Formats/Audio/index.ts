@@ -49,7 +49,7 @@ export {
 	ContainedInstrument
 } from "./SBNK/Instrument";
 
-export { SequenceRenderer, RendererInfo, RendererFileInfo as RendererInfoSequence } from "./SequenceRenderer/SequenceRenderer";
+export { SequenceRenderer, RendererInfo, RendererFileInfo } from "./SequenceRenderer/SequenceRenderer";
 export { Track, TrackInfo } from "./SequenceRenderer/Track";
 export { SequenceVariables } from "./SequenceRenderer/SequenceVariables";
 export { Synthesizer } from "./SequenceRenderer/Synthesizer";
