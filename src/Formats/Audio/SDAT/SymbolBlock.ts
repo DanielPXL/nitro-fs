@@ -1,6 +1,6 @@
 import { BufferReader } from "../../../BufferReader";
 import { Block } from "../Common/Block";
-import { Table, Uint32TableEntry } from "../Common/Table";
+import { Table, TableEntry, Uint32TableEntry } from "../Common/Table";
 
 // https://gota7.github.io/NitroStudio2/specs/soundData.html#symbol-block
 
@@ -8,9 +8,16 @@ export class SymbolBlock extends Block {
 	constructor(raw: BufferReader) {
 		super(raw, "SYMB");
 		
-		function getSymbols(offset: number) {
+		function getSymbols(offset: number, direct = false) {
 			let symbols = [];
-			const tableOffset = raw.readUint32(offset);
+
+			let tableOffset: number;
+			if (direct) {
+				tableOffset = offset;
+			} else {
+				tableOffset = raw.readUint32(offset);
+			}
+
 			const table = new Table(raw.slice(tableOffset), Uint32TableEntry);
 
 			for (let i = 0; i < table.entries.length; i++) {
@@ -27,9 +34,30 @@ export class SymbolBlock extends Block {
 			return symbols;
 		}
 
+		function getSSARSymbols(offset: number) {
+			let symbols: SSARSymbol[] = [];
+			const tableOffset = raw.readUint32(offset);
+			const table = new Table(raw.slice(tableOffset), SSARSymbolEntry);
+
+			for (let i = 0; i < table.entries.length; i++) {
+				const entry = table.entries[i];
+				if (entry.archiveSymbolOffset === 0 || entry.sequenceTableOffset === 0) {
+					continue;
+				}
+
+				let symbol: SSARSymbol = {
+					archiveName: raw.readString(entry.archiveSymbolOffset),
+					sequenceNames: getSymbols(entry.sequenceTableOffset, true)
+				};
+
+				symbols[i] = symbol;
+			}
+
+			return symbols;
+		}
+
 		this.sequenceSymbols = getSymbols(0x08);
-		// No SSAR symbols for now since they are structured a bit differently
-		// this.ssarSymbols = getSymbols(0x0C);
+		this.sequenceArchiveSymbols = getSSARSymbols(0x0C);
 		this.bankSymbols = getSymbols(0x10);
 		this.waveArchiveSymbols = getSymbols(0x14);
 		this.playerSymbols = getSymbols(0x18);
@@ -39,11 +67,32 @@ export class SymbolBlock extends Block {
 	}
 
 	public sequenceSymbols: string[];
-	// public ssarSymbols: string[];
+	public sequenceArchiveSymbols: SSARSymbol[];
 	public bankSymbols: string[];
 	public waveArchiveSymbols: string[];
 	public playerSymbols: string[];
 	public groupSymbols: string[];
 	public streamPlayerSymbols: string[];
 	public streamSymbols: string[];
+}
+
+export interface SSARSymbol {
+	archiveName: string;
+	sequenceNames: string[];
+}
+
+export class SSARSymbolEntry extends TableEntry {
+	constructor(raw: BufferReader) {
+		super(raw);
+
+		// 0x00 (4 bytes): Archive Symbol Offset
+		this.archiveSymbolOffset = raw.readUint32(0x00);
+		// 0x04 (4 bytes): Sequence Symbol Table Offsets
+		this.sequenceTableOffset = raw.readUint32(0x04);
+	}
+
+	readonly length = 0x08;
+
+	archiveSymbolOffset: number;
+	sequenceTableOffset: number;
 }

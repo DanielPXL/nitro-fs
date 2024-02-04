@@ -5,7 +5,7 @@ export { EncodingType } from "./Common/Encoding";
 
 export { SDAT } from "./SDAT/SDAT";
 export { SDATHeader } from "./SDAT/SDATHeader";
-export { SDATFS, SoundFile } from "./SDAT/SDATFS";
+export { SDATFS, SoundFile, SequenceArchiveFile } from "./SDAT/SDATFS";
 export { InfoBlock } from "./SDAT/InfoBlock";
 export { 
 	SequenceInfo,
@@ -19,6 +19,8 @@ export {
 	StreamPlayerInfo,
 	StreamInfo 
 } from "./SDAT/FileInfo";
+
+export { SSAR, SSARDataBlock, SequenceArchiveEntry } from "./SSAR/SSAR";
 
 export { SSEQ, SSEQDataBlock } from "./SSEQ/SSEQ";
 export { Command, OffsetCommand, NestedCommand, Commands, ModType } from "./SSEQ/Command";
@@ -47,7 +49,7 @@ export {
 	ContainedInstrument
 } from "./SBNK/Instrument";
 
-export { SequenceRenderer, RendererInfo } from "./SequenceRenderer/SequenceRenderer";
+export { SequenceRenderer, RendererInfo, RendererFileInfo as RendererInfoSequence } from "./SequenceRenderer/SequenceRenderer";
 export { Track, TrackInfo } from "./SequenceRenderer/Track";
 export { SequenceVariables } from "./SequenceRenderer/SequenceVariables";
 export { Synthesizer } from "./SequenceRenderer/Synthesizer";

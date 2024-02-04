@@ -6,8 +6,6 @@ import { TrackInfo } from "./Track";
 
 export class Synthesizer {
 	constructor(bank: SBNK, swars: SWAR[], sampleRate: number, bpm: number, sink: (buffer: Float32Array[]) => void, bufferLength: number = 1024 * 4) {
-		this.bank = bank;
-		this.swars = swars;
 		this.sampleRate = sampleRate;
 		this.bpm = bpm;
 		this.bufferLength = bufferLength;
@@ -26,8 +24,6 @@ export class Synthesizer {
 		}
 	}
 
-	bank: SBNK;
-	swars: SWAR[];
 	sampleRate: number;
 	bpm: number;
 	bufferLength: number;

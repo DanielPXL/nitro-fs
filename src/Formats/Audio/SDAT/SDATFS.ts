@@ -1,9 +1,9 @@
 import { BufferReader } from "../../../BufferReader";
 import { InfoBlock } from "./InfoBlock";
 import { SDATHeader } from "./SDATHeader";
-import { SymbolBlock } from "./SymbolBlock";
+import { SSARSymbol, SymbolBlock } from "./SymbolBlock";
 import { FATBlock } from "./FATBlock";
-import { BankInfo, SequenceInfo, StreamInfo, WaveArchiveInfo } from "./FileInfo";
+import { BankInfo, SequenceArchiveInfo, SequenceInfo, StreamInfo, WaveArchiveInfo } from "./FileInfo";
 
 export class SDATFS {
 	constructor(raw: BufferReader, header: SDATHeader) {
@@ -33,15 +33,34 @@ export class SDATFS {
 			return files;
 		}
 
+		function collectSSARFiles(symbols: SSARSymbol[], infos: SequenceArchiveInfo[]): SequenceArchiveFile[] {
+			let files = [];
+
+			for (let i = 0; i < infos.length; i++) {
+				const info = infos[i];
+				if (info) {
+					const name = symbols ? symbols[i].archiveName : null;
+					const sequenceNames = symbols ? symbols[i].sequenceNames : null;
+					
+					const fatEntry = fatBlock.entries[info.fileId];
+					const buffer = raw.slice(fatEntry.offset, fatEntry.offset + fatEntry.size);
+
+					files.push(new SequenceArchiveFile(name, info, i, buffer, sequenceNames));
+				}
+			}
+
+			return files;
+		}
+
 		this.sequences = collectFiles(symbolBlock ? symbolBlock.sequenceSymbols : null, this.infoBlock.sequenceInfo);
-		//this.sequenceArchives = collectFiles(symbolBlock ? symbolBlock.sequenceArchiveSymbols : null, infoBlock.sequenceArchiveInfo);
+		this.sequenceArchives = collectSSARFiles(symbolBlock ? symbolBlock.sequenceArchiveSymbols : null, this.infoBlock.sequenceArchiveInfo);
 		this.banks = collectFiles(symbolBlock ? symbolBlock.bankSymbols : null, this.infoBlock.bankInfo);
 		this.waveArchives = collectFiles(symbolBlock ? symbolBlock.waveArchiveSymbols : null, this.infoBlock.waveArchiveInfo);
 		this.streams = collectFiles(symbolBlock ? symbolBlock.streamSymbols : null, this.infoBlock.streamInfo);
 	}
 
 	sequences: SoundFile<SequenceInfo>[];
-	//sequenceArchives: SoundFile<SequenceArchiveInfo>[];
+	sequenceArchives: SequenceArchiveFile[];
 	banks: SoundFile<BankInfo>[];
 	waveArchives: SoundFile<WaveArchiveInfo>[];
 	streams: SoundFile<StreamInfo>[];
@@ -61,4 +80,13 @@ export class SoundFile<T> {
 	fileInfo: T;
 	id: number;
 	buffer: BufferReader;
+}
+
+export class SequenceArchiveFile extends SoundFile<SequenceArchiveInfo> {
+	constructor(name: string, fileInfo: SequenceArchiveInfo, id: number, buffer: BufferReader, sequenceSymbols: string[]) {
+		super(name, fileInfo, id, buffer);
+		this.sequenceSymbols = sequenceSymbols;
+	}
+
+	sequenceSymbols: string[];
 }

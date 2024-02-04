@@ -1,41 +1,28 @@
-import { CommandType } from "../SSEQ/CommandType";
-import { SDAT } from "../SDAT/SDAT";
-import { SSEQ } from "../SSEQ/SSEQ";
 import { Track } from "./Track";
 import { SBNK } from "../SBNK/SBNK";
 import { Synthesizer } from "./Synthesizer";
 import { SWAR } from "../SWAR/SWAR";
-import { SequenceInfo } from "../SDAT/FileInfo";
 import { SequenceVariables } from "./SequenceVariables";
 import { Random } from "./Random";
+import { Command } from "../SSEQ/Command";
+import { SDAT } from "../SDAT/SDAT";
+import { SequenceInfo } from "../SDAT/FileInfo";
+import { SequenceArchiveFile, SoundFile } from "../SDAT/SDATFS";
+import { SSEQ } from "../SSEQ/SSEQ";
+import { SSAR } from "../SSAR/SSAR";
 
 /**
  * Renders an SSEQ to a stereo buffer of 32-bit floating point samples.
  */
 export class SequenceRenderer {
 	constructor(info: RendererInfo) {
-		this.sseq = info.sseq;
-		this.sdat = info.sdat;
+		this.commands = info.file.commands;
 		this.sampleRate = info.sampleRate ? info.sampleRate : 48000;
 		this.activeTracks = info.activeTracks ? info.activeTracks : 0xFFFF;
 		this.sequenceVariables = info.variables ? info.variables : new SequenceVariables();
 		this.random = new Random(info.seed);
 
-		const sbnkFile = this.sdat.fs.banks.find(b => b.id === info.sseqInfo.bankId);
-		const sbnk = new SBNK(sbnkFile.buffer);
-		const sbnkInfo = sbnkFile.fileInfo;
-
-		let swar = [];
-		for (let i = 0; i < sbnkInfo.waveArchives.length; i++) {
-			const waveArchiveId = sbnkInfo.waveArchives[i];
-			const waveArchive = this.sdat.fs.waveArchives.find(w => w.id === waveArchiveId);
-	
-			if (waveArchive) {
-				swar[i] = new SWAR(waveArchive.buffer);
-			}
-		}
-
-		this.synth = new Synthesizer(sbnk, swar, info.sampleRate, this.tempo, info.sink, info.bufferLength);
+		this.synth = new Synthesizer(info.file.bank, info.file.swars, info.sampleRate, this.tempo, info.sink, info.bufferLength);
 		
 		// this.samplesPerTick = SequenceRenderer.TICK_INTERVAL * sampleRate;
 		// Do this to avoid floating point rounding errors
@@ -47,8 +34,7 @@ export class SequenceRenderer {
 
 	public static readonly TICK_INTERVAL_MS = ((64 * 2728) * 1000 / 33513982);
 
-	sseq: SSEQ;
-	sdat: SDAT;
+	commands: Command[];
 	sampleRate: number;
 	synth: Synthesizer;
 	samplesPerTick: number;
@@ -90,8 +76,7 @@ export class SequenceRenderer {
 		const t = new Track(
 			track,
 			offset,
-			this.sseq,
-			this.sdat,
+			this.commands,
 			this.synth,
 			this.sampleRate,
 			this.sequenceVariables,
@@ -118,26 +103,102 @@ export class SequenceRenderer {
 		this.tempo = tempo;
 		this.synth.bpm = tempo;
 	}
+
+	static makeInfoSSEQ(sdat: SDAT, name: string): RendererFileInfo
+	static makeInfoSSEQ(sdat: SDAT, id: number): RendererFileInfo
+	static makeInfoSSEQ(sdat: SDAT, id: string | number): RendererFileInfo {
+		let sseqFile: SoundFile<SequenceInfo>;
+		if (typeof id === "string") {
+			sseqFile = sdat.fs.sequences.find(s => s.name === id);
+		} else {
+			sseqFile = sdat.fs.sequences.find(s => s.id === id);
+		}
+
+		if (!sseqFile) {
+			throw new Error(`Sequence ${id} not found`);
+		}
+
+		const sbnkFile = sdat.fs.banks.find(b => b.id === sseqFile.fileInfo.bankId);
+		const sbnkInfo = sbnkFile.fileInfo;
+
+		let swar = [];
+		for (let i = 0; i < sbnkInfo.waveArchives.length; i++) {
+			const waveArchiveId = sbnkInfo.waveArchives[i];
+			const waveArchive = sdat.fs.waveArchives.find(w => w.id === waveArchiveId);
+	
+			if (waveArchive) {
+				swar[i] = new SWAR(waveArchive.buffer);
+			}
+		}
+
+		const sseq = new SSEQ(sseqFile.buffer);
+		const sbnk = new SBNK(sbnkFile.buffer);
+		return {
+			commands: sseq.data.commands,
+			bank: sbnk,
+			swars: swar
+		}
+	}
+
+	static makeInfoSSAR(sdat: SDAT, name: string, subName: string): RendererFileInfo
+	static makeInfoSSAR(sdat: SDAT, name: string, subId: number): RendererFileInfo
+	static makeInfoSSAR(sdat: SDAT, id: number, subId: number): RendererFileInfo
+	static makeInfoSSAR(sdat: SDAT, id: number, subName: string): RendererFileInfo
+	static makeInfoSSAR(sdat: SDAT, id: string | number, subId: string | number): RendererFileInfo {
+		let ssarFileIndex: number;
+		if (typeof id === "string") {
+			ssarFileIndex = sdat.fs.sequenceArchives.findIndex(s => s.name === id);
+		} else {
+			ssarFileIndex = sdat.fs.sequenceArchives.findIndex(s => s.id === id);
+		}
+
+		if (ssarFileIndex === -1) {
+			throw new Error(`Sequence Archive ${id} not found`);
+		}
+
+		const ssarFile = sdat.fs.sequenceArchives[ssarFileIndex];
+		const ssar = new SSAR(ssarFile.buffer);
+
+		let subSequenceIndex: number;
+		if (typeof subId === "string") {
+			subSequenceIndex = ssarFile.sequenceSymbols.findIndex(s => s === subId);
+		} else {
+			subSequenceIndex = subId;
+		}
+
+		if (subSequenceIndex === -1) {
+			throw new Error(`Sequence ${subId} not found in Sequence Archive ${id}`);
+		}
+
+		const subSequence = ssar.dataBlock.sequenceTable.entries[subSequenceIndex];
+		const sbnkFile = sdat.fs.banks.find(b => b.id === subSequence.bankId);
+		const sbnkInfo = sbnkFile.fileInfo;
+
+		let swar = [];
+		for (let i = 0; i < sbnkInfo.waveArchives.length; i++) {
+			const waveArchiveId = sbnkInfo.waveArchives[i];
+			const waveArchive = sdat.fs.waveArchives.find(w => w.id === waveArchiveId);
+	
+			if (waveArchive) {
+				swar[i] = new SWAR(waveArchive.buffer);
+			}
+		}
+
+		const sbnk = new SBNK(sbnkFile.buffer);
+		return {
+			commands: ssar.getSequenceData(subSequenceIndex),
+			bank: sbnk,
+			swars: swar
+		}
+	}
 }
 
 /**
  * Information needed to render an SSEQ.
  */
 export interface RendererInfo {
-	/**
-	 * The SDAT that contains the SSEQ, SBNK, and SWAR files.
-	 */
-	sdat: SDAT;
 
-	/**
-	 * The SSEQ to render.
-	 */
-	sseq: SSEQ;
-
-	/**
-	 * The SSEQ info block for the SSEQ to render.
-	 */
-	sseqInfo: SequenceInfo;
+	file: RendererFileInfo;
 
 	/**
 	 * The function to call when the renderer has a buffer to output.
@@ -174,4 +235,10 @@ export interface RendererInfo {
 	 * Seed for the random number generator. Defaults to Date.now().
 	 */
 	seed?: number;
+}
+
+export interface RendererFileInfo {
+	commands: Command[];
+	bank: SBNK;
+	swars: SWAR[];
 }

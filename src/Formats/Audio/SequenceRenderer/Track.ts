@@ -1,18 +1,16 @@
 import { CommandType } from "../SSEQ/CommandType";
-import { SDAT } from "../SDAT/SDAT";
 import { SSEQ } from "../SSEQ/SSEQ";
-import { Commands, ModType } from "../SSEQ/Command";
+import { Command, Commands, ModType } from "../SSEQ/Command";
 import { Synthesizer } from "./Synthesizer";
 import { SequenceVariables } from "./SequenceVariables";
 import { Random } from "./Random";
 import { Note } from "../SSEQ/Note";
 
 export class Track {	
-	constructor(track: number, offset: number, sseq: SSEQ, sdat: SDAT, synth: Synthesizer, sampleRate: number, variables: SequenceVariables, random: Random, stopTrack: () => void, changeTempo: (tempo: number) => void, openTrack: (track: number, offset: number) => void) {
+	constructor(track: number, offset: number, commands: Command[], synth: Synthesizer, sampleRate: number, variables: SequenceVariables, random: Random, stopTrack: () => void, changeTempo: (tempo: number) => void, openTrack: (track: number, offset: number) => void) {
 		this.track = track;
 		this.offset = offset;
-		this.sseq = sseq;
-		this.sdat = sdat;
+		this.commands = commands;
 		this.sampleRate = sampleRate;
 		this.synth = synth;
 		this.variables = variables;
@@ -83,8 +81,7 @@ export class Track {
 	
 	track: number;
 	offset: number;
-	sseq: SSEQ;
-	sdat: SDAT;
+	commands: Command[];
 	sampleRate: number;
 	synth: Synthesizer;
 	
@@ -118,7 +115,7 @@ export class Track {
 
 	tick() {
 		while (this.wait === 0) {
-			const command = this.sseq.data.commands[this.pointer];
+			const command = this.commands[this.pointer];
 
 			if (command === undefined) {
 				this.stopTrackCallback(this.track);
