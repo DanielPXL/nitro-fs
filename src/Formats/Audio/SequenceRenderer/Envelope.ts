@@ -46,7 +46,7 @@ export class Envelope {
 
 		switch (this.state) {
 			case EnvelopeState.Attack:
-				this.gain = this.attackRate * this.gain / 255;
+				this.gain = Math.round(this.attackRate * this.gain / 255);
 				if (this.gain >= 0) {
 					this.state = EnvelopeState.Decay;
 					this.gain = 0;

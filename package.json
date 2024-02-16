@@ -1,6 +1,6 @@
 {
   "name": "nitro-fs",
-  "version": "1.0.2",
+  "version": "1.0.3",
   "description": "Library for reading the Nitro SDK Filesystem, used on most NDS games, and parsing files like textures and sound",
   "type": "module",
   "main": "dist/nitro-fs.js",
