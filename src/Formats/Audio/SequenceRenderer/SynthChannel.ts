@@ -31,19 +31,22 @@ export class SynthChannel {
 	playing: PlayingNote[] = [];
 
 	getValue() {
-		let sum = 0;
+		let leftSum = 0;
+		let rightSum = 0;
 		for (let i = 0; i < this.playing.length; i++) {
 			if (this.playing[i]) {
-				sum += this.playing[i].getValue();
+				const pan = Math.min(1, Math.max(0, this.pan + this.playing[i].pan - 0.5));
+				const leftWeight = 1 - pan;
+				const rightWeight = 1 + pan;
+
+				const value = this.playing[i].getValue();
+
+				leftSum += value * leftWeight;
+				rightSum += value * rightWeight;
 			}
 		}
 
-		const leftWeight = Math.min(1, Math.max(0, 1 - this.pan));
-		const rightWeight = Math.min(1, Math.max(0, 1 + this.pan));
-
-		const left = sum * leftWeight;
-		const right = sum * rightWeight;
-		return [left, right];
+		return [leftSum, rightSum];
 	}
 	
 	playNote(time: number, note: Note, velocity: number, stopTime?: number, trackInfo?: TrackInfo) {
@@ -74,7 +77,7 @@ export class SynthChannel {
 		}
 
 		const index = this.findFirstEmpty();
-		this.playing[index] = new PlayingNote(note, envelope, sample, this.sampleRate, velocity, trackInfo, () => {
+		this.playing[index] = new PlayingNote(note, envelope, sample, this.sampleRate, velocity, trackInfo, noteInfo.pan, () => {
 			this.playing[index] = null;
 		});
 	}

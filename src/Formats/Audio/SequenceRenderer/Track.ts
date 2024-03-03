@@ -5,6 +5,7 @@ import { Synthesizer } from "./Synthesizer";
 import { SequenceVariables } from "./SequenceVariables";
 import { Random } from "./Random";
 import { Note } from "../SSEQ/Note";
+import { ADSRConverter } from "./ADSRConverter";
 
 export class Track {	
 	constructor(track: number, offset: number, commands: Command[], synth: Synthesizer, sampleRate: number, variables: SequenceVariables, random: Random, stopTrack: () => void, changeTempo: (tempo: number) => void, openTrack: (track: number, offset: number) => void) {
@@ -245,11 +246,7 @@ export class Track {
 	}
 
 	private Pan(cmd: Commands.Pan) {
-		if (cmd.pan < 64) {
-			this.synth.channels[this.track].pan = (cmd.pan - 64) / 64;
-		} else {
-			this.synth.channels[this.track].pan = (cmd.pan - 64) / 63;
-		}
+		this.synth.channels[this.track].pan = ADSRConverter.convertPan(cmd.pan);
 	}
 
 	private Volume(cmd: Commands.Volume) {

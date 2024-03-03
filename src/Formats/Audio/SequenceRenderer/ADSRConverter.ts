@@ -73,6 +73,14 @@ export class ADSRConverter {
 	}
 	
 	public static convertVolume(volume: number): number {
-		return KermalisVGMSUtils.GetChannelVolume(volume);
+		return KermalisVGMSUtils.GetChannelVolume(volume) / 127;
+	}
+
+	public static convertPan(pan: number): number {
+		if (pan < 64) {
+			return (pan - 64) / 64;
+		} else {
+			return (pan - 64) / 63;
+		}
 	}
 }

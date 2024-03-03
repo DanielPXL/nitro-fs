@@ -6,7 +6,7 @@ import { Sample } from "./Sample";
 import { TrackInfo } from "./Track";
 
 export class PlayingNote {
-	constructor(note: Note, envelope: Envelope, sample: Sample, sampleRate: number, velocity: number, trackInfo: TrackInfo, doneCallback: () => void) {
+	constructor(note: Note, envelope: Envelope, sample: Sample, sampleRate: number, velocity: number, trackInfo: TrackInfo, pan: number, doneCallback: () => void) {
 		this.note = note;
 		this.notePlusPortamento = note;
 		this.envelope = envelope;
@@ -15,6 +15,7 @@ export class PlayingNote {
 		this.sampleRate = sampleRate;
 		this.velocity = ADSRConverter.convertSustain(velocity);
 		this.trackInfo = trackInfo;
+		this.pan = ADSRConverter.convertPan(pan);
 		this.doneCallback = doneCallback;
 
 		// These need to be copied because they can't be modified while a note is playing
@@ -32,6 +33,7 @@ export class PlayingNote {
 	sampleRate: number;
 	velocity: number;
 	trackInfo: TrackInfo;
+	pan: number;
 	doneCallback: () => void;
 	
 	sampleIndex = 0;
@@ -62,7 +64,7 @@ export class PlayingNote {
 			+ ADSRConverter.convertSustain(this.trackInfo.volume1)
 			+ ADSRConverter.convertSustain(this.trackInfo.volume2);
 		
-		const actualVolume = (ADSRConverter.convertVolume(volume) / 127) * this.modulationVolume;
+		const actualVolume = ADSRConverter.convertVolume(volume) * this.modulationVolume;
 		return Math.min(1, Math.max(0, actualVolume)) * s;
 	}
 
