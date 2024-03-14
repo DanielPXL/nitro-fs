@@ -35,9 +35,8 @@ export class SynthChannel {
 		let rightSum = 0;
 		for (let i = 0; i < this.playing.length; i++) {
 			if (this.playing[i]) {
-				const pan = Math.min(1, Math.max(0, this.pan + this.playing[i].pan - 0.5));
-				const leftWeight = 1 - pan;
-				const rightWeight = 1 + pan;
+				const rightWeight = Math.min(1, Math.max(0, (this.pan + this.playing[i].pan + 1) / 2));
+				const leftWeight = 1 - rightWeight;
 
 				const value = this.playing[i].getValue();
 
